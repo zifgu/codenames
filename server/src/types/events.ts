@@ -8,15 +8,17 @@ export interface ServerToClientEvents {
   newClue: (playerId: PlayerId, clue: Clue, newTurn: Turn) => void;
   newGuess: (playerId: PlayerId, cardIndex: number, colour: CardTeam, newScore: Score, newTurn: Turn) => void;
   newTurn: (newTurn: Turn) => void;
+
+  win: (winningTeam: Team) => void;
 }
 
 export interface ClientToServerEvents {
   join: (playerId: PlayerId, callback: (gameState: GameState | null) => void) => void;
-  joinTeam: (playerId: PlayerId, team: Team, role: Role, callback?: (cards: CardData[]) => void) => void;
+  joinTeam: (team: Team, role: Role, callback: (cards?: CardData[]) => void) => void;
 
-  submitClue: (playerId: PlayerId, clue: Clue) => void;
-  submitGuess: (playerId: PlayerId, cardIndex: number) => void;
-  endTurn: (playerId: PlayerId) => void;
+  submitClue: (clue: Clue) => void;
+  submitGuess: (cardIndex: number) => void;
+  endTurn: () => void;
 }
 
 export interface InterServerEvents {}

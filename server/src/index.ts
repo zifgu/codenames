@@ -7,9 +7,7 @@ import {
   GameState,
   getOppositeTeam,
   PlayerData,
-  Role,
-  roleToString,
-  teamToString
+  Role, Team,
 } from "./types/types";
 import {getRandomCards} from "./generation";
 
@@ -43,7 +41,7 @@ const game: GameState = {
 
   cards: getRandomCards(),
   turn: {
-    hintNumber: 0,
+    maxGuesses: 0,
     guessesLeft: 0,
     role: Role.SPYMASTER,
     team: CardTeam.RED,
@@ -54,8 +52,8 @@ const game: GameState = {
     [CardTeam.BLUE]: 0,
   },
   targetScore: {
-    [CardTeam.RED]: 9,
-    [CardTeam.BLUE]: 8,
+    [CardTeam.RED]: 3,
+    [CardTeam.BLUE]: 3,
   },
 };
 
@@ -65,7 +63,7 @@ const filterGame = (gameState: GameState) => {
     if (card.revealed) {
       return card;
     } else {
-      return {...card, team: CardTeam.UNKNOWN};
+      return {...card, team: CardTeam.HIDDEN};
     }
   });
   return copy;
@@ -75,69 +73,82 @@ io.on("connection", (socket) => {
   console.log("A user connected");
 
   socket.on("join", (playerId, callback) => {
-    console.log("Received join event");
-    socket.data.id = playerId;  // TODO: is this synced with the client?
-
     if (playerId in game.players) {
       console.log(`Error: nickname ${playerId} in use`);
 
       callback(null);
     } else {
-      const playerData: PlayerData = {id: playerId};
+      socket.data.id = playerId;
+
+      const playerData: PlayerData = {id: playerId, team: null, role: null};
       game.players[playerId] = playerData;
 
       console.log(`Player ${playerId} joined`);
       console.log(game);
+
       callback(filterGame(game));
 
       socket.broadcast.emit("playerJoin", playerData);
     }
   });
 
-  socket.on("joinTeam", (playerId, team, role, callback) => {
-    // TODO: validation
+  // TODO: to all sockets except sender
 
-    game.players[playerId].team = team;
-    game.players[playerId].role = role;
+  socket.on("joinTeam", (team, role, callback) => {
+    // Do nothing if player already has a team/role
+    const playerId = socket.data.id;
 
-    if (role === Role.SPYMASTER) {
-      game.teams[team][role] = playerId;
-    } else {
-      game.teams[team][role].push(playerId);
+    if (playerId && !game.players[playerId].team && !game.players[playerId].role) {
+      game.players[playerId].team = team;
+      game.players[playerId].role = role;
+
+      if (role === Role.SPYMASTER) {
+        game.teams[team][role] = playerId;
+        callback(game.cards);
+      } else {
+        game.teams[team][role].push(playerId);
+        callback();
+      }
+
+      console.log(`Player ${playerId} joined team ${team} as a ${role}`);
+      console.log(game);
+
+      io.emit("playerJoinTeam", playerId, team, role);
     }
-
-    console.log(`Player ${playerId} joined team ${teamToString(team)} as a ${roleToString(role)}`);
-    console.log(game);
-
-    if (callback) {
-      callback(game.cards);
-    }
-
-    // TODO: to all sockets except sender later
-    io.emit("playerJoinTeam", playerId, team, role);
   });
 
-  socket.on("submitClue", (playerId, clue) => {
-    // TODO: validation
+  socket.on("submitClue", (clue) => {
+    const playerId = socket.data.id;
+    if (!playerId) return;
 
-    game.pastClues.push(clue);
-
-    game.turn.hintNumber = clue.number + 1;
-    game.turn.guessesLeft = game.turn.hintNumber;
-    game.turn.role = Role.OPERATIVE;
-
-    console.log(`Player ${playerId} gave clue ${clue.word} (${clue.number})`);
-    console.log(game);
-
-    io.emit("newClue", playerId, clue, game.turn);
-  });
-
-  socket.on("submitGuess", (playerId, cardIndex) => {
-    // TODO: validation
+    // Do nothing if player is not allowed to submit clues
     const playerTeam = game.players[playerId].team;
+    const playerRole = game.players[playerId].role;
+
+    if (playerTeam == game.turn.team && playerRole === game.turn.role && playerRole === Role.SPYMASTER) {
+      game.pastClues.push(clue);
+
+      game.turn.maxGuesses = clue.number + 1;
+      game.turn.guessesLeft = game.turn.maxGuesses;
+      game.turn.role = Role.OPERATIVE;
+
+      console.log(`Player ${playerId} gave clue ${clue.word} (${clue.number})`);
+      console.log(game);
+
+      io.emit("newClue", playerId, clue, game.turn);
+    }
+  });
+
+  socket.on("submitGuess", (cardIndex) => {
+    const playerId = socket.data.id;
+    if (!playerId) return;
+
+    // Do nothing if player is not allowed to submit guesses
+    const playerTeam = game.players[playerId].team;
+    const playerRole = game.players[playerId].role;
     const card = game.cards[cardIndex];
 
-    if (!card.revealed) {
+    if (playerTeam == game.turn.team && playerRole === game.turn.role && playerRole === Role.OPERATIVE && game.turn.guessesLeft > 0 && !card.revealed) {
       card.revealed = true;
 
       if (card.team === playerTeam) {
@@ -146,14 +157,15 @@ io.on("connection", (socket) => {
         game.turn.guessesLeft = 0;
       }
 
+      let winner: null | Team = null;
       if (card.team === CardTeam.RED || card.team === CardTeam.BLUE) {
         game.score[card.team]++;
 
         if (game.score[card.team] >= game.targetScore[card.team]) {
-          // TODO: win
+          winner = card.team;
         }
       } else if (card.team === CardTeam.ASSASSIN) {
-        // TODO: win
+        winner = getOppositeTeam(playerTeam);
       }
 
       if (game.turn.guessesLeft === 0) {
@@ -161,46 +173,56 @@ io.on("connection", (socket) => {
         game.turn.role = Role.SPYMASTER;
       }
 
-      console.log(`Player ${playerId} guessed card ${cardIndex} '${card.codename}' which was ${teamToString(card.team)}`);
+      console.log(`Player ${playerId} guessed card ${cardIndex} '${card.codename}' which was ${card.team}`);
       console.log(game);
 
       io.emit("newGuess", playerId, cardIndex, card.team, game.score, game.turn);
+
+      if (winner) {
+        io.emit("win", winner);
+      }
     }
   });
 
-  socket.on("endTurn", (playerId) => {
-    // TODO: validation
+  socket.on("endTurn", () => {
+    const playerId = socket.data.id;
+    if (!playerId) return;
 
-    game.turn.team = getOppositeTeam(game.turn.team);
-    game.turn.role = Role.SPYMASTER;
+    // Do nothing if player is not allowed to end turn
+    const playerTeam = game.players[playerId].team;
+    const playerRole = game.players[playerId].role;
 
-    console.log(`Player ${playerId} ended their turn`);
-    console.log(game);
+    if (playerTeam == game.turn.team && playerRole === game.turn.role && playerRole === Role.OPERATIVE && game.turn.guessesLeft < game.turn.maxGuesses) {
+      game.turn.team = getOppositeTeam(game.turn.team);
+      game.turn.role = Role.SPYMASTER;
 
-    io.emit("newTurn", game.turn);
+      console.log(`Player ${playerId} ended their turn`);
+      console.log(game);
+
+      io.emit("newTurn", game.turn);
+    }
   });
 
   socket.on("disconnect", () => {
     console.log("A user disconnected");
-    const nickname = socket.data.id;
+    const playerId = socket.data.id;
 
-    if (nickname) {
-      // TODO: smarter deletion?
-      if (game.teams[CardTeam.RED][Role.SPYMASTER] === nickname) {
+    if (playerId) {
+      if (game.teams[CardTeam.RED][Role.SPYMASTER] === playerId) {
         game.teams[CardTeam.RED][Role.SPYMASTER] = null;
-      } else if (game.teams[CardTeam.BLUE][Role.SPYMASTER] === nickname) {
+      } else if (game.teams[CardTeam.BLUE][Role.SPYMASTER] === playerId) {
         game.teams[CardTeam.BLUE][Role.SPYMASTER] = null;
       } else {
-        game.teams[CardTeam.RED][Role.OPERATIVE] = game.teams[CardTeam.RED][Role.OPERATIVE].filter((id) => id !== nickname);
-        game.teams[CardTeam.BLUE][Role.OPERATIVE] = game.teams[CardTeam.BLUE][Role.OPERATIVE].filter((id) => id !== nickname);
+        game.teams[CardTeam.RED][Role.OPERATIVE] = game.teams[CardTeam.RED][Role.OPERATIVE].filter((id) => id !== playerId);
+        game.teams[CardTeam.BLUE][Role.OPERATIVE] = game.teams[CardTeam.BLUE][Role.OPERATIVE].filter((id) => id !== playerId);
       }
 
-      delete game.players[nickname];
+      delete game.players[playerId];
 
-      console.log(`Player ${nickname} left`);
+      console.log(`Player ${playerId} left`);
       console.log(game);
 
-      io.emit("playerLeave", nickname);
+      io.emit("playerLeave", playerId);
     }
   });
 });

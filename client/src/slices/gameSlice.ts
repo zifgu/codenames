@@ -34,6 +34,9 @@ export const gameSlice = createSlice({
     setPlayer: (state, action: PayloadAction<string>) => {
       state.playerId = action.payload;
     },
+    setWinner: (state, action: PayloadAction<Team>) => {
+      state.winner = action.payload;
+    },
     setGame: (state, action: PayloadAction<GameState | null>) => {
       state.game = action.payload;
     },
@@ -47,27 +50,28 @@ export const gameSlice = createSlice({
 
       const {playerId, role, team} = action.payload;
 
-      // TODO: validation
-      state.game.players[playerId].team = team;
-      state.game.players[playerId].role = role;
+      if (!state.game.players[playerId].team && !state.game.players[playerId].role) {
+        state.game.players[playerId].team = team;
+        state.game.players[playerId].role = role;
 
-      if (role === Role.SPYMASTER) {
-        state.game.teams[team][role] = playerId;
-      } else {
-        state.game.teams[team][role].push(playerId);
+        if (role === Role.SPYMASTER) {
+          state.game.teams[team][role] = playerId;
+        } else {
+          state.game.teams[team][role].push(playerId);
+        }
       }
     },
     removePlayer: (state, action: PayloadAction<PlayerId>) => {
       if (!state.game) return;
 
-      const {id: playerId, role, team} = state.game.players[action.payload];
-      // TODO: look in other places
-      if (team !== undefined && role !== undefined) {
-        if (role === Role.SPYMASTER) {
-          state.game.teams[team][role] = null;
-        } else {
-          state.game.teams[team][role] = state.game.teams[team][role].filter((id) => id !== playerId);
-        }
+      const playerId = action.payload;
+      if (state.game.teams[CardTeam.RED][Role.SPYMASTER] === playerId) {
+        state.game.teams[CardTeam.RED][Role.SPYMASTER] = null;
+      } else if (state.game.teams[CardTeam.BLUE][Role.SPYMASTER] === playerId) {
+        state.game.teams[CardTeam.BLUE][Role.SPYMASTER] = null;
+      } else {
+        state.game.teams[CardTeam.RED][Role.OPERATIVE] = state.game.teams[CardTeam.RED][Role.OPERATIVE].filter((id) => id !== playerId);
+        state.game.teams[CardTeam.BLUE][Role.OPERATIVE] = state.game.teams[CardTeam.BLUE][Role.OPERATIVE].filter((id) => id !== playerId);
       }
     },
     addClue: (state, action: PayloadAction<Clue>) => {
@@ -98,56 +102,10 @@ export const gameSlice = createSlice({
 
       state.game.turn = action.payload;
     },
-    // giveClue: (state, action: PayloadAction<{word: string, number: number}>) => {
-    //   const playerTeam = getPlayerTeam(state);
-    //
-    //   if (playerTeam && state.turn.role === Role.SPYMASTER && isPlayerTurn(state)) {
-    //     state.pastClues.push({...action.payload, team: playerTeam});
-    //
-    //     state.turn.hintNumber = action.payload.number + 1;
-    //     state.turn.guessesLeft = state.turn.hintNumber;
-    //     state.turn.role = Role.OPERATIVE;
-    //   }
-    // },
-    // revealCard: (state, action: PayloadAction<number>) => {
-    //   const playerTeam = getPlayerTeam(state);
-    //   const card = state.cards[action.payload];
-    //
-    //   if (state.turn.role === Role.OPERATIVE && isPlayerTurn(state) && state.turn.guessesLeft > 0 && !card.revealed) {
-    //     card.revealed = true;
-    //
-    //     if (card.team === playerTeam) {
-    //       state.turn.guessesLeft -= 1;
-    //     } else {
-    //       state.turn.guessesLeft = 0;
-    //     }
-    //
-    //     if (card.team === CardTeam.RED || card.team === CardTeam.BLUE) {
-    //       state.score[card.team]++;
-    //
-    //       if (state.score[card.team] >= state.targetScore[card.team]) {
-    //         state.winner = card.team;
-    //       }
-    //     } else if (card.team === CardTeam.ASSASSIN) {
-    //       state.winner = getOppositeTeam(state.turn.team);
-    //     }
-    //
-    //     if (state.turn.guessesLeft === 0) {
-    //       state.turn.team = getOppositeTeam(state.turn.team);
-    //       state.turn.role = Role.SPYMASTER;
-    //     }
-    //   }
-    // },
-    // endTurn: (state) => {
-    //   if (state.turn.role === Role.OPERATIVE && isPlayerTurn(state) && state.turn.guessesLeft < state.turn.hintNumber) {
-    //     state.turn.team = getOppositeTeam(state.turn.team);
-    //     state.turn.role = Role.SPYMASTER;
-    //   }
-    // }
   },
 });
 
-export const {setPlayer, setGame, addPlayer, addPlayerToTeam, addClue, removePlayer, setScore, setTurn, revealCard, setCards} = gameSlice.actions;
+export const {setPlayer, setWinner, setGame, addPlayer, addPlayerToTeam, addClue, removePlayer, setScore, setTurn, revealCard, setCards} = gameSlice.actions;
 
 export const selectPlayerTeam = (state: RootState) => getPlayerTeam(state.root);
 export const selectPlayerRole = (state: RootState) => getPlayerRole(state.root);

@@ -37,9 +37,8 @@
 }
 
 .codename-card.hidden {
-    /* override other styles when hidden */
-    background-color: var(--bs-gray)!important;
-    color: var(--bs-light)!important;
+    background-color: var(--bs-gray);
+    color: var(--bs-light);
     border: 4px solid var(--bs-light);
 }
 

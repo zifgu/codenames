@@ -12,9 +12,7 @@ import {
   CardTeam,
   Clue,
   Role,
-  roleToString,
   Team,
-  teamToString,
 } from "./types/types";
 import {
   addClue,
@@ -26,7 +24,7 @@ import {
   selectPlayerRole,
   selectPlayerTeam, setCards, setGame, setPlayer,
   setScore,
-  setTurn,
+  setTurn, setWinner,
 } from "./slices/gameSlice";
 import io, {Socket} from 'socket.io-client';
 import {ClientToServerEvents, ServerToClientEvents} from "./types/events";
@@ -45,42 +43,41 @@ export function App() {
     });
 
     socket.on("playerJoin", (player) => {
-      // TODO: add player
       console.log(`Received playerJoin ${player.id}`);
       dispatch(addPlayer(player));
     });
 
     socket.on("playerJoinTeam", (playerId, team, role) => {
-      // TODO: add player to team
-      console.log(`Received playerJoinTeam ${playerId} ${teamToString(team)} ${roleToString(role)}`);
+      console.log(`Received playerJoinTeam ${playerId} ${team} ${role}`);
       dispatch(addPlayerToTeam({playerId, team, role}));
     });
 
     socket.on("playerLeave", (playerId) => {
-      // TODO: remove player from team
       console.log(`Received playerLeave ${playerId}`);
       dispatch(removePlayer(playerId));
     });
 
     socket.on("newClue", (playerId, clue, newTurn) => {
-      // TODO: receive clue / add clue, set turn
       console.log(`Received clue from ${playerId}: ${clue.word} (${clue.number})`);
       dispatch(addClue(clue));
       dispatch(setTurn(newTurn));
     });
 
     socket.on("newGuess", (playerId, cardIndex, colour, newScore, newTurn) => {
-      // TODO: receive guess / reveal card, set score, set turn
-      console.log(`Received guess from ${playerId}: card ${cardIndex} is ${teamToString(colour)}`);
+      console.log(`Received guess from ${playerId}: card ${cardIndex} is ${colour}`);
       dispatch(revealCard({cardIndex, colour}));
       dispatch(setScore(newScore));
       dispatch(setTurn(newTurn));
     });
 
     socket.on("newTurn", (newTurn) => {
-      // TODO: end turn / set turn
       console.log(`Received endTurn`);
       dispatch(setTurn(newTurn));
+    });
+
+    socket.on("win", (winningTeam) => {
+      console.log(`Received win`);
+      dispatch(setWinner(winningTeam));
     });
 
     return () => {
@@ -91,13 +88,13 @@ export function App() {
       socket.off("newClue");
       socket.off("newGuess");
       socket.off("newTurn");
+      socket.off("win");
     };
   }, [dispatch]);
 
   const onConnect = () => {
     socket.emit("join", nickname, (gameState) => {
-      // TODO: set game state
-      dispatch(addPlayer({id: nickname}));
+      dispatch(addPlayer({id: nickname, team: null, role: null}));
       dispatch(setPlayer(nickname));
       dispatch(setGame(gameState));
     });
@@ -190,7 +187,7 @@ function GameWonModal() {
         {
           winner != null &&
           <Modal.Title>
-            Winner: {teamToString(winner)}!
+            Winner: {winner}!
           </Modal.Title>
         }
       </Modal.Header>
@@ -207,8 +204,8 @@ function Header({turn}: {turn: {team: Team, role: Role}}) {
   const playerId = useAppSelector(state => state.root.playerId);
   const playerTeam = useAppSelector(selectPlayerTeam);
   const playerRole = useAppSelector(selectPlayerRole);
-  const message = (playerTeam !== undefined && playerRole !== undefined) ?
-    `You are the ${teamToString(playerTeam)} ${roleToString(playerRole)}.` :
+  const message = (playerTeam && playerRole) ?
+    `You are the ${playerTeam} ${playerRole}.` :
     "You are not in a team.";
 
   return (
@@ -217,7 +214,7 @@ function Header({turn}: {turn: {team: Team, role: Role}}) {
       {" "}
       {message}
       {" "}
-      It is the {teamToString(turn.team)} {roleToString(turn.role)}'s turn.
+      It is the {turn.team} {turn.role}'s turn.
     </div>
   );
 }
@@ -225,10 +222,9 @@ function Header({turn}: {turn: {team: Team, role: Role}}) {
 function SpymasterInput() {
   const [word, setWord] = useState<string>("");
   const [number, setNumber] = useState<number>(1);
-  const playerId = useAppSelector(state => state.root.playerId);
   const playerTeam = useAppSelector(selectPlayerTeam);
 
-  if (playerTeam === undefined) return null;
+  if (!playerTeam) return null;
 
   const validWord = (w: string) => w.length > 0;
   const validNumber = (num: number) => 1 <= num && num <= 9;
@@ -240,7 +236,7 @@ function SpymasterInput() {
     }
   }
   const onSubmitClue = () => {
-    socket.emit("submitClue", playerId, {word, number, team: playerTeam});
+    socket.emit("submitClue", {word, number, team: playerTeam});
     setWord("");
     setNumber(1);
   }
@@ -278,14 +274,13 @@ function SpymasterInput() {
 }
 
 function OperativeInput() {
-  const playerId = useAppSelector(state => state.root.playerId);
-  const canEndTurn = useAppSelector(state => state.root.game && state.root.game.turn.guessesLeft < state.root.game.turn.hintNumber);
+  const canEndTurn = useAppSelector(state => state.root.game && state.root.game.turn.guessesLeft < state.root.game.turn.maxGuesses);
 
   return (
     <Button
       disabled={!canEndTurn}
       onClick={() => {
-        socket.emit("endTurn", playerId)
+        socket.emit("endTurn")
       }}
     >
       End turn
@@ -300,7 +295,7 @@ function TeamPanel({team}: {team: Team}) {
 
   return (
     <div className="h-100 d-flex flex-column gap-2">
-      {teamToString(team)}
+      {team}
       <ScorePanel
         score={gameState.score[team]}
         targetScore={gameState.targetScore[team]}
@@ -321,7 +316,6 @@ function ScorePanel({score, targetScore} : {score: number, targetScore: number})
 
 function PlayersPanel({team} : {team: Team}) {
   const gameState = useAppSelector(state => state.root.game);
-  const playerId = useAppSelector(state => state.root.playerId);
   const playerTeam = useAppSelector(selectPlayerTeam);
   const dispatch = useAppDispatch();
 
@@ -341,9 +335,9 @@ function PlayersPanel({team} : {team: Team}) {
         }
       </div>
       <Button
-        disabled={playerTeam !== undefined || spymaster !== null}
+        disabled={playerTeam !== null || spymaster !== null}
         onClick={() => {
-          socket.emit("joinTeam", playerId, team, Role.SPYMASTER, (cards) => {
+          socket.emit("joinTeam", team, Role.SPYMASTER, (cards) => {
             if (cards !== undefined) {
               dispatch(setCards(cards));
             }
@@ -361,9 +355,9 @@ function PlayersPanel({team} : {team: Team}) {
         }
       </div>
       <Button
-        disabled={playerTeam !== undefined}
+        disabled={playerTeam !== null}
         onClick={() => {
-          socket.emit("joinTeam", playerId, team, Role.OPERATIVE);
+          socket.emit("joinTeam", team, Role.OPERATIVE, () => {});
         }}
       >
         Join as operative
@@ -397,11 +391,10 @@ function CardGrid({cards}: {cards: CardData[]}) {
 }
 
 function Card({index, cardData}: {index: number, cardData: CardData}) {
-  const playerId = useAppSelector(state => state.root.playerId);
   const playerRole = useAppSelector(selectPlayerRole);
   const isPlayerTurn = useAppSelector(selectIsPlayerTurn);
 
-  const cardClass = getCardClass(cardData.team);
+  const cardClass = cardData.team; // same string representation as team
   const revealedClass = (playerRole === Role.SPYMASTER && cardData.revealed) ? "revealed" : "";
 
   return (
@@ -413,7 +406,7 @@ function Card({index, cardData}: {index: number, cardData: CardData}) {
             size="sm"
             variant="light"
             onClick={() => {
-              socket.emit("submitGuess", playerId, index);
+              socket.emit("submitGuess", index);
             }}
           >
             Guess
@@ -421,21 +414,6 @@ function Card({index, cardData}: {index: number, cardData: CardData}) {
       }
     </div>
   );
-}
-
-function getCardClass(team: CardTeam): string {
-  switch (team) {
-    case CardTeam.RED:
-      return "red";
-    case CardTeam.BLUE:
-      return "blue";
-    case CardTeam.BYSTANDER:
-      return "bystander";
-    case CardTeam.ASSASSIN:
-      return "assassin";
-    case CardTeam.UNKNOWN:
-      return "hidden";
-  }
 }
 
 export default App;
