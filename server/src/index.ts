@@ -52,8 +52,8 @@ const game: GameState = {
     [CardTeam.BLUE]: 0,
   },
   targetScore: {
-    [CardTeam.RED]: 3,
-    [CardTeam.BLUE]: 3,
+    [CardTeam.RED]: 9,
+    [CardTeam.BLUE]: 8,
   },
 };
 
