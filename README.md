@@ -1,7 +1,6 @@
 # Codenames
 
 ## Wishlist
-- Ability to leave room
 - Starting a new game in the same room
 - Reveal all cards when game ends
 - Ability to change nickname

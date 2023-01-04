@@ -7,10 +7,8 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCopy, faGear, faRightFromBracket} from "@fortawesome/free-solid-svg-icons";
 import "./GameMenu.css";
 
-export function GameMenu() {
-  const handleLeaveButtonClick = () => {
-
-  };
+export function GameMenu({onLeaveGame}: {onLeaveGame: () => void}) {
+  const handleLeaveButtonClick = () => onLeaveGame();
 
   return (
     <div className="game-menu px-3">

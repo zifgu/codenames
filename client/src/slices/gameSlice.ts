@@ -18,12 +18,12 @@ interface State {
   winner: null | Team,
 }
 
-const initialState: State = {
+const defaultState = (): State => ({
   game: null,
   playerId: "",
   roomId: "",
   winner: null,
-};
+});
 
 const getPlayerTeam = (state: State) => state.game?.players[state.playerId].team;
 const getPlayerRole = (state: State) => state.game?.players[state.playerId].role;
@@ -31,8 +31,11 @@ const isPlayerTurn = (state: State) => state.game && getPlayerTeam(state) === st
 
 export const gameSlice = createSlice({
   name: 'root',
-  initialState,
+  initialState: defaultState(),
   reducers: {
+    reset: () => {
+      return defaultState();
+    },
     setPlayer: (state, action: PayloadAction<PlayerId>) => {
       state.playerId = action.payload;
     },
@@ -78,6 +81,8 @@ export const gameSlice = createSlice({
         state.game.teams[CardTeam.RED][Role.OPERATIVE] = state.game.teams[CardTeam.RED][Role.OPERATIVE].filter((id) => id !== playerId);
         state.game.teams[CardTeam.BLUE][Role.OPERATIVE] = state.game.teams[CardTeam.BLUE][Role.OPERATIVE].filter((id) => id !== playerId);
       }
+
+      delete state.game.players[playerId];
     },
     addClue: (state, action: PayloadAction<Clue>) => {
       if (!state.game) return;
@@ -110,7 +115,7 @@ export const gameSlice = createSlice({
   },
 });
 
-export const {setPlayer, setRoomId, setWinner, setGame, addPlayer, addPlayerToTeam, addClue, removePlayer, setScore, setTurn, revealCard, setCards} = gameSlice.actions;
+export const {reset, setPlayer, setRoomId, setWinner, setGame, addPlayer, addPlayerToTeam, addClue, removePlayer, setScore, setTurn, revealCard, setCards} = gameSlice.actions;
 
 export const selectPlayerTeam = (state: RootState) => getPlayerTeam(state.root);
 export const selectPlayerRole = (state: RootState) => getPlayerRole(state.root);

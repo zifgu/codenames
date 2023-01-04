@@ -16,6 +16,7 @@ export interface ClientToServerEvents {
   createGame: (playerId: PlayerId, callback: (roomId: RoomId, gameState: GameState) => void) => void;
   joinGame: (playerId: PlayerId, roomId: RoomId, callback: (roomId: RoomId | null, gameState: GameState | null) => void) => void;
   joinTeam: (team: Team, role: Role, callback: (cards?: CardData[]) => void) => void;
+  leaveGame: () => void;
 
   submitClue: (clue: Clue) => void;
   submitGuess: (cardIndex: number) => void;

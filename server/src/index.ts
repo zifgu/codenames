@@ -245,6 +245,36 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("leaveGame", () => {
+    const playerId = socket.data.playerId;
+    const roomId = socket.data.roomId;
+
+    if (playerId && roomId && roomId in rooms) {
+      const game = rooms[roomId].game;
+
+      if (game.teams[CardTeam.RED][Role.SPYMASTER] === playerId) {
+        game.teams[CardTeam.RED][Role.SPYMASTER] = null;
+      } else if (game.teams[CardTeam.BLUE][Role.SPYMASTER] === playerId) {
+        game.teams[CardTeam.BLUE][Role.SPYMASTER] = null;
+      } else {
+        game.teams[CardTeam.RED][Role.OPERATIVE] = game.teams[CardTeam.RED][Role.OPERATIVE].filter((id) => id !== playerId);
+        game.teams[CardTeam.BLUE][Role.OPERATIVE] = game.teams[CardTeam.BLUE][Role.OPERATIVE].filter((id) => id !== playerId);
+      }
+
+      delete game.players[playerId];
+
+      console.log(`Player ${playerId} left room ${roomId}`);
+      console.log(game);
+
+      // Clear player ID and room ID in case client wants to join another game
+      socket.leave(roomId);
+      socket.data.playerId = "";
+      socket.data.roomId = "";
+
+      io.in(roomId).emit("playerLeave", playerId);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("A user disconnected");
     const playerId = socket.data.playerId;

@@ -6,6 +6,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import {CardTeam, Clue, Role, RoomId, Team,} from "./types/types";
 import {
+  reset,
   addClue,
   addPlayer,
   addPlayerToTeam,
@@ -158,10 +159,15 @@ function Game() {
     socket.emit("endTurn");
   };
 
+  const handleLeaveGame = () => {
+    socket.emit("leaveGame");
+    dispatch(reset());
+  }
+
   return (
     <div className="game">
       <GameWonModal />
-      <GameMenu />
+      <GameMenu onLeaveGame={handleLeaveGame} />
       <Header
         turn={gameState.turn}
         onSubmitClue={handleSubmitClue}
