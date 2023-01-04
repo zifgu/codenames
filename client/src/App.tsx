@@ -26,9 +26,8 @@ import {GameWonModal} from "./components/WinModal";
 import {Header} from "./components/Header";
 import {TeamPanel} from "./components/TeamPanel";
 import {CardGrid} from "./components/CardGrid";
-import {Button} from "./components/Button";
-import {Input} from "./components/Input";
 import {GameMenu} from "./components/GameMenu";
+import {HomePage} from "./components/HomePage";
 
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://localhost:3001`);
 
@@ -131,63 +130,6 @@ export function App() {
       }
     </>
   );
-}
-
-interface HomePageProps {
-  nickname: string,
-  roomId: RoomId,
-  onChangeNickname: (nickname: string) => void,
-  onChangeRoomId: (roomId: RoomId) => void,
-  onCreateGame: () => void,
-  onJoinGame: () => void,
-}
-
-function HomePage({nickname, roomId, onChangeNickname, onChangeRoomId, onCreateGame, onJoinGame}: HomePageProps) {
-  const [page, setPage] = useState<"home"|"create"|"join">("home");
-  if (page === "home") {
-    return (
-      <div className="fullscreen-center">
-        <h1>CODENAMES</h1>
-        <Button onClick={() => setPage("create")}>Create game</Button>
-        <Button onClick={() => setPage("join")}>Join game</Button>
-      </div>
-    );
-  } else if (page === "create") {
-    return (
-      <div className="fullscreen-center">
-        <h1>Create game</h1>
-        Give yourself a nickname:
-        <Input
-          type="text"
-          placeholder="Enter a nickname"
-          value={nickname}
-          onChange={(e) => onChangeNickname(e.currentTarget.value)}
-        />
-        <Button onClick={onCreateGame}>Create</Button>
-      </div>
-    );
-  } else {
-    return (
-      <div className="fullscreen-center">
-        <h1>Join game</h1>
-        Enter Room ID:
-        <Input
-          type="text"
-          placeholder="Room ID"
-          value={roomId}
-          onChange={(e) => onChangeRoomId(e.currentTarget.value)}
-        />
-        Give yourself a nickname:
-        <Input
-          type="text"
-          placeholder="Enter a nickname"
-          value={nickname}
-          onChange={(e) => onChangeNickname(e.currentTarget.value)}
-        />
-        <Button onClick={onJoinGame}>Join</Button>
-      </div>
-    );
-  }
 }
 
 function Game() {

@@ -21,6 +21,10 @@
     font-size: 16px;
 }
 
+.push-button.lg > .front {
+    font-size: 24px;
+}
+
 /* Colour variants - gray by default */
 .push-button, .push-button.gray {
     background-color: var(--gray-2);

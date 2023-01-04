@@ -52,7 +52,7 @@ function PlayersPanel({team, onJoinTeam}: { team: Team, onJoinTeam: (team: Team,
         Spymaster:
         {playerTeam === null &&
           <Button
-            small
+            sizeVariant="sm"
             disabled={spymaster !== null}
             onClick={() => handleJoinButtonClick(Role.SPYMASTER)}
           >
@@ -69,7 +69,7 @@ function PlayersPanel({team, onJoinTeam}: { team: Team, onJoinTeam: (team: Team,
         Operatives:
         {playerTeam === null &&
           <Button
-            small
+            sizeVariant="sm"
             onClick={() => handleJoinButtonClick(Role.OPERATIVE)}
           >
             Join
