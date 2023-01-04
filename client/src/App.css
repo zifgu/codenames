@@ -14,7 +14,7 @@ body {
     --gray-1: #656565;
     --gray-2: #474747;
     --light-1: #E1E1E1;
-    --light-2: #C8C8C8;
+    --light-2: #C0C0C0;
     --dark-1: #232323;
     --dark-2: #000000;
 
@@ -47,7 +47,7 @@ body {
 }
 .game-main {
     height: 70%;
-    margin-bottom: 3rem;
+    margin-bottom: 4rem;
 }
 
 /* Utility classes */

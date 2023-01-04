@@ -8,15 +8,16 @@ interface ButtonProps extends React.HTMLProps<HTMLButtonElement> {
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({children, variant, small, pushed, ...props}: ButtonProps, ref) => {
-  const variantClass = variant ? variant : "";
-  const sizeClass = small ? "sm" : "";
-  const pushedClass = pushed ? "selected" : "";
+  const variantClass = variant ? ` ${variant}` : "";
+  const sizeClass = small ? " sm" : "";
+  const pushedClass = pushed ? " selected" : "";
+  const existingClasses = props.className ? ` ${props.className}` : "";
   return (
     <button
       ref={ref}
       {...props}
       type="button"
-      className={`${props.className} ${variantClass} ${sizeClass} ${pushedClass}`}
+      className={`push-button${variantClass}${sizeClass}${pushedClass}${existingClasses}`}
     >
       <span className="front">
         {children}

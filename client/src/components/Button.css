@@ -1,4 +1,4 @@
-button {
+.push-button {
     padding: 0;
     border: none;
     border-radius: var(--bs-border-radius-sm);
@@ -6,7 +6,7 @@ button {
     transform: translateY(2px); /* translate down overall for better centering */
 }
 
-button > .front {
+.push-button > .front {
     display: block;
     width: 100%;
     border-radius: var(--bs-border-radius-sm);
@@ -17,41 +17,56 @@ button > .front {
 }
 
 /* Size variants */
-button.sm > .front {
+.push-button.sm > .front {
     font-size: 16px;
 }
 
 /* Colour variants - gray by default */
-button, button.gray {
+.push-button, .push-button.gray {
     background-color: var(--gray-2);
 }
-button > .front, button.gray > .front {
+.push-button > .front, .push-button.gray > .front {
     background-color: var(--gray-1);
 }
 
-button.red {
+.push-button.red {
     background-color: var(--red-2);
 }
-button.red > .front {
+.push-button.red > .front {
     background-color: var(--red-1);
 }
 
-button.blue {
+.push-button.blue {
     background-color: var(--blue-2);
 }
-button.blue > .front {
+.push-button.blue > .front {
     background-color: var(--blue-1);
 }
 
+.push-button.light {
+    background-color: var(--light-2);
+}
+.push-button.light > .front {
+    background-color: var(--light-1);
+    color: black;
+}
+
+.push-button.dark {
+    background-color: var(--dark-2);
+}
+.push-button.dark > .front {
+    background-color: var(--dark-1);
+}
+
 /* Contextual styles */
-button:hover:enabled > .front {
+.push-button:hover:enabled > .front {
     filter: brightness(90%);
 }
 
-button.selected > .front, button:active:enabled > .front, button:disabled > .front {
+.push-button.selected > .front, .push-button:active:enabled > .front, .push-button:disabled > .front {
     transform: translateY(-1px);
 }
 
-button:disabled {
+.push-button:disabled {
     opacity: 70%;
 }

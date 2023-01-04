@@ -3,7 +3,6 @@ import {useAppSelector} from "../redux/hooks";
 import {selectIsPlayerTurn, selectPlayerRole} from "../slices/gameSlice";
 import {CardData, Role} from "../types/types";
 import "./CardGrid.css";
-import {Button} from "./Button";
 
 export function CardGrid({cards, onSubmitGuess}: { cards: CardData[], onSubmitGuess: (cardIndex: number) => void }) {
   return (
@@ -22,21 +21,27 @@ function Card({index, cardData, onSubmitGuess}: { index: number, cardData: CardD
   const isPlayerTurn = useAppSelector(selectIsPlayerTurn);
 
   const cardClass = cardData.team; // classes named after team strings
-  const revealedClass = (playerRole === Role.SPYMASTER && cardData.revealed) ? "revealed" : "";
+  const revealedClass = (playerRole === Role.SPYMASTER && cardData.revealed) ? " revealed" : "";
 
-  const handleGuess = () => onSubmitGuess(index);
+  const canGuessCard = isPlayerTurn && playerRole === Role.OPERATIVE && !cardData.revealed;
+  const interactibleClass = canGuessCard ? " interactible" : "";
 
+  const handleGuess = () => {
+    if (canGuessCard) {
+      onSubmitGuess(index);
+    }
+  }
+
+  // TODO: may be easier if this was just a button
   return (
-    <div className={`codename-card ${cardClass} ${revealedClass}`}>
+    <div
+      className={`codename-card ${cardClass}${revealedClass}${interactibleClass}`}
+      tabIndex={canGuessCard ? 0 : -1}
+        onClick={handleGuess}
+    >
       <div className="codename-card__label">
         {cardData.codename.toUpperCase()}
       </div>
-      {
-        isPlayerTurn && playerRole === Role.OPERATIVE && !cardData.revealed &&
-        <Button
-          onClick={handleGuess}
-        >Guess</Button>
-      }
     </div>
   );
 }
