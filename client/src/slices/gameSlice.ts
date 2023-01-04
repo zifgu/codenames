@@ -15,14 +15,12 @@ interface State {
   game: GameState | null,
   playerId: PlayerId,
   roomId: RoomId,
-  winner: null | Team,
 }
 
 const defaultState = (): State => ({
   game: null,
   playerId: "",
   roomId: "",
-  winner: null,
 });
 
 const getPlayerTeam = (state: State) => state.game?.players[state.playerId].team;
@@ -30,7 +28,7 @@ const getPlayerRole = (state: State) => state.game?.players[state.playerId].role
 const isPlayerTurn = (state: State) => state.game && getPlayerTeam(state) === state.game.turn.team && getPlayerRole(state) === state.game.turn.role;
 
 export const gameSlice = createSlice({
-  name: 'root',
+  name: 'room',
   initialState: defaultState(),
   reducers: {
     reset: () => {
@@ -43,7 +41,9 @@ export const gameSlice = createSlice({
       state.roomId = action.payload;
     },
     setWinner: (state, action: PayloadAction<Team>) => {
-      state.winner = action.payload;
+      if (!state.game) return;
+
+      state.game.winner = action.payload;
     },
     setGame: (state, action: PayloadAction<GameState | null>) => {
       state.game = action.payload;
@@ -117,8 +117,8 @@ export const gameSlice = createSlice({
 
 export const {reset, setPlayer, setRoomId, setWinner, setGame, addPlayer, addPlayerToTeam, addClue, removePlayer, setScore, setTurn, revealCard, setCards} = gameSlice.actions;
 
-export const selectPlayerTeam = (state: RootState) => getPlayerTeam(state.root);
-export const selectPlayerRole = (state: RootState) => getPlayerRole(state.root);
-export const selectIsPlayerTurn = (state: RootState) => isPlayerTurn(state.root);
+export const selectPlayerTeam = (state: RootState) => getPlayerTeam(state.room);
+export const selectPlayerRole = (state: RootState) => getPlayerRole(state.room);
+export const selectIsPlayerTurn = (state: RootState) => isPlayerTurn(state.room);
 
 export default gameSlice.reducer;

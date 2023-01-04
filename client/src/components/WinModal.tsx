@@ -6,10 +6,8 @@ import "./WinModal.css";
 import {CardTeam} from "../types/types";
 
 export function GameWonModal() {
-  const winner = useAppSelector(state => state.root.winner);
-  const score = useAppSelector(state => state.root.game ? state.root.game.score : null);
-
-  if (!score) return null;
+  const winner = useAppSelector(state => state.room.game ? state.room.game.winner : null);
+  const score = useAppSelector(state => state.room.game ? state.room.game.score : null);
 
   return (
     <Modal
@@ -24,8 +22,13 @@ export function GameWonModal() {
       </div>
       <div className="win-modal__body p-4">
         <div className="mb-3"><span className={`text-${winner}`}>{winner}</span> has won!</div>
-        <div><span className="text-red">{CardTeam.RED}</span> - {score[CardTeam.RED]} agents found</div>
-        <div><span className="text-blue">{CardTeam.BLUE}</span> - {score[CardTeam.BLUE]} agents found</div>
+        {
+          score &&
+          <>
+            <div><span className="text-red">{CardTeam.RED}</span> - {score[CardTeam.RED]} agents found</div>
+            <div><span className="text-blue">{CardTeam.BLUE}</span> - {score[CardTeam.BLUE]} agents found</div>
+          </>
+        }
       </div>
       <div className="win-modal__footer pb-4">
         <Button>Close</Button>

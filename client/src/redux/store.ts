@@ -3,7 +3,7 @@ import gameReducer from '../slices/gameSlice';
 
 const store = configureStore({
   reducer: {
-    root: gameReducer,
+    room: gameReducer,
   },
 });
 

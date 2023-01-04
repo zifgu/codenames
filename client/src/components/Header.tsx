@@ -111,7 +111,7 @@ function SpymasterControls({onSubmitClue}: {onSubmitClue: (clue: Clue) => void})
 }
 
 function OperativeControls({onEndTurn}: {onEndTurn: () => void}) {
-  const canEndTurn = useAppSelector(state => state.root.game && state.root.game.turn.guessesLeft < state.root.game.turn.maxGuesses);
+  const canEndTurn = useAppSelector(state => state.room.game && state.room.game.turn.guessesLeft < state.room.game.turn.maxGuesses);
 
   return (
     <div className="operative-controls">
@@ -127,7 +127,7 @@ function OperativeControls({onEndTurn}: {onEndTurn: () => void}) {
 }
 
 function LatestClue() {
-  const latestClue = useAppSelector(state => state.root.game && state.root.game.pastClues[state.root.game.pastClues.length - 1]);
+  const latestClue = useAppSelector(state => state.room.game && state.room.game.pastClues[state.room.game.pastClues.length - 1]);
   return (
     latestClue ?
       <div className="latest-clue">

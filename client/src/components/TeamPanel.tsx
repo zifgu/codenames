@@ -6,7 +6,7 @@ import { Button } from "./Button";
 import "./TeamPanel.css";
 
 export function TeamPanel({team, onJoinTeam}: { team: Team, onJoinTeam: (team: Team, role: Role) => void }) {
-  const gameState = useAppSelector(state => state.root.game);
+  const gameState = useAppSelector(state => state.room.game);
 
   if (gameState === null) return null;
 
@@ -34,7 +34,7 @@ function ScorePanel({score, targetScore}: { score: number, targetScore: number }
 }
 
 function PlayersPanel({team, onJoinTeam}: { team: Team, onJoinTeam: (team: Team, role: Role) => void}) {
-  const gameState = useAppSelector(state => state.root.game);
+  const gameState = useAppSelector(state => state.room.game);
   const playerTeam = useAppSelector(selectPlayerTeam);
 
   if (gameState === null) return null;

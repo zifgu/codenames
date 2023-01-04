@@ -34,7 +34,7 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://lo
 
 export function App() {
   const dispatch = useAppDispatch();
-  const gameState = useAppSelector(state => state.root.game);
+  const gameState = useAppSelector(state => state.room.game);
   const [room, setRoom] = useState<RoomId>("");
   const [nickname, setNickname] = useState<string>("");
 
@@ -135,7 +135,7 @@ export function App() {
 
 function Game() {
   const dispatch = useAppDispatch();
-  const gameState = useAppSelector(state => state.root.game);
+  const gameState = useAppSelector(state => state.room.game);
 
   if (gameState === null) return null;
 

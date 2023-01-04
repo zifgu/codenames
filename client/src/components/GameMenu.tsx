@@ -24,7 +24,7 @@ export function GameMenu({onLeaveGame}: {onLeaveGame: () => void}) {
 }
 
 function RoomInvite() {
-  const roomId = useAppSelector(state => state.root.roomId);
+  const roomId = useAppSelector(state => state.room.roomId);
   const [showTooltip, setShowTooltip] = useState(false);
 
   const handleCopyButtonClick = async () => {

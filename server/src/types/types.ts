@@ -69,6 +69,7 @@ export interface GameState {
     score: Score,
     targetScore: Score,
     pastClues: Clue[],
+    winner: null | Team,
 }
 
 export interface Room {
