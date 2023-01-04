@@ -37,6 +37,8 @@ export function App() {
   const gameState = useAppSelector(selectGame);
   const [room, setRoom] = useState<RoomId>("");
   const [nickname, setNickname] = useState<string>("");
+  const [roomError, setRoomError] = useState(false);
+  const [nicknameError, setNicknameError] = useState(false);
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -105,15 +107,21 @@ export function App() {
   };
 
   const handleJoinGame = () => {
+    setRoomError(false);
+    setNicknameError(false);
     socket.emit("joinGame", nickname, room, (roomId, gameState) => {
-      if (roomId !== null && gameState !== null) {
+      if (roomId === null) {
+        // Invalid room ID
+        setRoomError(true);
+      } else if (gameState === null) {
+        // Invalid nickname
+        setNicknameError(true);
+      } else {
         dispatch(addPlayer({id: nickname, team: null, role: null}));
         dispatch(setRoomId(roomId));
         dispatch(setPlayer(nickname));
         dispatch(setGame(gameState));
       }
-
-      // TODO: error handling
     });
   };
 
@@ -125,6 +133,8 @@ export function App() {
           <HomePage
             nickname={nickname}
             roomId={room}
+            nicknameError={nicknameError}
+            roomError={roomError}
             onChangeNickname={(newNickname) => setNickname(newNickname)}
             onChangeRoomId={(newRoomId) => setRoom(newRoomId)}
             onCreateGame={handleCreateGame}

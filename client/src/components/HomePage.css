@@ -1,44 +1,37 @@
-/* Home page */
-.home-title {
+.home {
+    height: 100vh;
+}
+
+.home div.col, .home div.row, .title-page, .side-page {
+    height: 100%;
+}
+
+/* Main section */
+.title-page, .side-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: start;
+}
+
+.title-page__title {
     font-family: var(--codename-font);
     font-size: 54px;
     margin-bottom: 0;
 }
 
-.home-subtitle {
+.title-page__subtitle {
     font-family: var(--codename-font);
     font-style: italic;
     margin-bottom: 4rem;
 }
 
-.home-button {
-    width: 30%;
+.title-page__button {
+    width: 75%;
     margin-bottom: 1rem;
 }
 
-/* Create/join pages */
-.page-container {
-    width: 30%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+/* Side section - join, create pages */
+.side-page {
 
-    padding: 3rem;
-    background-color: var(--dark-1);
-    border-radius: var(--bs-border-radius-lg);
-}
-
-.page-container h3 {
-    margin-bottom: 1.5rem;
-}
-
-.page-container input {
-    width: 100%;
-    margin-bottom: 2.5rem;
-}
-
-.page-container button {
-    min-width: 40%;
 }

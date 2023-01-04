@@ -13,7 +13,7 @@ Refactoring:
 - Tests
 
 Cosmetic:
-- Client-side input validation
+- *Client-side input validation*
 - Animation
 - Rules/hints
 - Colorblind hints on cards

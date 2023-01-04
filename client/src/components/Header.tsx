@@ -1,4 +1,4 @@
-import React, {FormEvent, ReactNode, useState} from "react";
+import React, {ReactNode, useState} from "react";
 import {useAppSelector} from "../redux/hooks";
 import {Clue, Role, Team} from "../types/types";
 import {
@@ -9,7 +9,7 @@ import {
   selectWinner
 } from "../slices/gameSlice";
 import {Button} from "./Button";
-import {Input} from "./Input";
+import FormControl from "react-bootstrap/FormControl";
 import "./Header.css";
 
 interface HeaderProps {
@@ -76,7 +76,6 @@ function SpymasterControls({onSubmitClue}: {onSubmitClue: (clue: Clue) => void})
   if (!playerTeam) return null;
 
   const validWord = (w: string) => w.length > 0;
-  const handleChangeWord = (e: FormEvent<HTMLInputElement>) => setWord(e.currentTarget.value.toUpperCase());
   const handleChangeNumber = (val: number) => setNumber(val);
   const handleSubmitClue = () => {
     if (validWord(word)) {
@@ -88,15 +87,15 @@ function SpymasterControls({onSubmitClue}: {onSubmitClue: (clue: Clue) => void})
 
   return (
     <div className="spymaster-controls">
-      <Input
+      <FormControl
         className="clue-word-input"
         type="text"
         placeholder="Enter a one-word clue"
         value={word}
         disabled={!isPlayerTurn}
-        onChange={handleChangeWord}
+        onChange={(e) => setWord(e.currentTarget.value.toUpperCase())}
       />
-      <div className="number-buttons-container">
+      <div className="number-buttons-container" role="group">
         {
           [1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
             <Button

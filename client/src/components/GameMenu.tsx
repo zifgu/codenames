@@ -1,7 +1,8 @@
 import React, {useState} from "react";
 import {useAppSelector} from "../redux/hooks";
-import {OverlayTrigger, Tooltip} from "react-bootstrap";
-import {Input} from "./Input";
+import FormControl from "react-bootstrap/FormControl";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 import {Button} from "./Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCopy, faGear, faRightFromBracket} from "@fortawesome/free-solid-svg-icons";
@@ -36,7 +37,7 @@ function RoomInvite() {
 
   return (
     <div className="game-invite">
-      <Input readOnly value={roomId}/>
+      <FormControl readOnly value={roomId}/>
       <OverlayTrigger
         placement="bottom"
         show={showTooltip}
