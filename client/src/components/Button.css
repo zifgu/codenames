@@ -1,0 +1,57 @@
+button {
+    padding: 0;
+    border: none;
+    border-radius: var(--bs-border-radius-sm);
+
+    transform: translateY(2px); /* translate down overall for better centering */
+}
+
+button > .front {
+    display: block;
+    width: 100%;
+    border-radius: var(--bs-border-radius-sm);
+    padding: 0.25em 0.5em;
+
+    color: white;
+    transform: translateY(-4px);
+}
+
+/* Size variants */
+button.sm > .front {
+    font-size: 16px;
+}
+
+/* Colour variants - gray by default */
+button, button.gray {
+    background-color: var(--gray-2);
+}
+button > .front, button.gray > .front {
+    background-color: var(--gray-1);
+}
+
+button.red {
+    background-color: var(--red-2);
+}
+button.red > .front {
+    background-color: var(--red-1);
+}
+
+button.blue {
+    background-color: var(--blue-2);
+}
+button.blue > .front {
+    background-color: var(--blue-1);
+}
+
+/* Contextual styles */
+button:hover:enabled > .front {
+    filter: brightness(90%);
+}
+
+button.selected > .front, button:active:enabled > .front, button:disabled > .front {
+    transform: translateY(-1px);
+}
+
+button:disabled {
+    opacity: 70%;
+}

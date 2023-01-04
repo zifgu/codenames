@@ -4,8 +4,6 @@ import './App.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Form from 'react-bootstrap/Form';
-import Button from "react-bootstrap/Button";
 import {CardTeam, Clue, Role, Team,} from "./types/types";
 import {
   addClue,
@@ -13,8 +11,7 @@ import {
   addPlayerToTeam,
   removePlayer,
   revealCard,
-  selectIsPlayerTurn,
-  selectPlayerRole, setCards,
+  setCards,
   setGame,
   setPlayer,
   setScore,
@@ -25,9 +22,11 @@ import io, {Socket} from 'socket.io-client';
 import {ClientToServerEvents, ServerToClientEvents} from "./types/events";
 import {useAppDispatch, useAppSelector} from "./redux/hooks";
 import {GameWonModal} from "./components/WinModal";
-import {Header, OperativeInput, SpymasterInput} from "./components/Header";
+import {Header} from "./components/Header";
 import {TeamPanel} from "./components/TeamPanel";
 import {CardGrid} from "./components/CardGrid";
+import {Button} from "./components/Button";
+import {Input} from "./components/Input";
 
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://localhost:3001`);
 
@@ -119,17 +118,15 @@ function JoinPage({nickname, onChangeNickname, onConnect}: {nickname: string, on
     <div className="game">
       <Row className="justify-content-center">
         <Col xs={8}>
-          <Form.Control
+          <Input
             type="text"
             placeholder="Enter a nickname"
             value={nickname}
-            onChange={(e) => onChangeNickname(e.target.value)}
+            onChange={(e) => onChangeNickname(e.currentTarget.value)}
           />
         </Col>
         <Col xs={2}>
-          <Button onClick={onConnect}>
-            Connect
-          </Button>
+          <Button onClick={onConnect}>Connect</Button>
         </Col>
       </Row>
     </div>
@@ -139,8 +136,6 @@ function JoinPage({nickname, onChangeNickname, onConnect}: {nickname: string, on
 function Game() {
   const dispatch = useAppDispatch();
   const gameState = useAppSelector(state => state.root.game);
-  const isPlayerTurn = useAppSelector(selectIsPlayerTurn);
-  const playerRole = useAppSelector(selectPlayerRole);
 
   if (gameState === null) return null;
 
@@ -167,22 +162,26 @@ function Game() {
   return (
     <div className="game">
       <GameWonModal />
-      <Header turn={gameState.turn} />
+      <Header
+        turn={gameState.turn}
+        onSubmitClue={handleSubmitClue}
+        onEndTurn={handleEndTurn}
+      />
       <Container fluid className="h-75">
         <Row className="h-100">
-          <Col xs={2}>
+          <Col xs={2} className="h-100">
             <TeamPanel
               team={CardTeam.RED}
               onJoinTeam={handleJoinTeam}
             />
           </Col>
-          <Col xs={8}>
+          <Col xs={8} className="h-100">
             <CardGrid
               cards={gameState.cards}
               onSubmitGuess={handleSubmitGuess}
             />
           </Col>
-          <Col xs={2}>
+          <Col xs={2} className="h-100">
             <TeamPanel
               team={CardTeam.BLUE}
               onJoinTeam={handleJoinTeam}
@@ -190,13 +189,6 @@ function Game() {
           </Col>
         </Row>
       </Container>
-      {
-        isPlayerTurn && (
-          playerRole === Role.SPYMASTER ?
-          <SpymasterInput onSubmitClue={handleSubmitClue}/> :
-          <OperativeInput onEndTurn={handleEndTurn}/>
-        )
-      }
     </div>
   );
 }

@@ -1,13 +1,13 @@
 import React from "react";
-import Button from "react-bootstrap/Button";
 import {useAppSelector} from "../redux/hooks";
 import {selectIsPlayerTurn, selectPlayerRole} from "../slices/gameSlice";
 import {CardData, Role} from "../types/types";
+import "./CardGrid.css";
+import {Button} from "./Button";
 
 export function CardGrid({cards, onSubmitGuess}: { cards: CardData[], onSubmitGuess: (cardIndex: number) => void }) {
   return (
-    <div className="h-100 gap-2"
-         style={{display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gridTemplateRows: "1fr 1fr 1fr 1fr 1fr"}}>
+    <div className="card-grid">
       {
         cards.map((card, index) => (
           <Card key={card.codename} index={index} cardData={card} onSubmitGuess={onSubmitGuess}/>
@@ -21,23 +21,21 @@ function Card({index, cardData, onSubmitGuess}: { index: number, cardData: CardD
   const playerRole = useAppSelector(selectPlayerRole);
   const isPlayerTurn = useAppSelector(selectIsPlayerTurn);
 
-  const cardClass = cardData.team; // same string representation as team
+  const cardClass = cardData.team; // classes named after team strings
   const revealedClass = (playerRole === Role.SPYMASTER && cardData.revealed) ? "revealed" : "";
 
   const handleGuess = () => onSubmitGuess(index);
 
   return (
-    <div className={`d-flex flex-column justify-content-center codename-card ${cardClass} ${revealedClass}`}>
-      {cardData.codename.toUpperCase()}
+    <div className={`codename-card ${cardClass} ${revealedClass}`}>
+      <div className="codename-card__label">
+        {cardData.codename.toUpperCase()}
+      </div>
       {
         isPlayerTurn && playerRole === Role.OPERATIVE && !cardData.revealed &&
         <Button
-          size="sm"
-          variant="light"
           onClick={handleGuess}
-        >
-          Guess
-        </Button>
+        >Guess</Button>
       }
     </div>
   );

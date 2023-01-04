@@ -1,0 +1,44 @@
+.win-modal {
+    text-align: center;
+    --bs-modal-width: 320px;
+}
+
+.modal-content {
+    /* Override Bootstrap styles */
+    border: none;
+}
+
+/* Header */
+.win-modal__header {
+    border-top-left-radius: var(--bs-border-radius);
+    border-top-right-radius: var(--bs-border-radius);
+
+    color: white;
+    font-weight: bold;
+}
+.win-modal__header.red {
+    background-color: var(--red-1);
+}
+.win-modal__header.blue {
+    background-color: var(--blue-1);
+}
+
+/* Body */
+.win-modal__body {
+    text-align: center;
+    color: black;
+}
+.win-modal__body .text-red, .win-modal__body .text-blue {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Footer */
+.win-modal__footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+.win-modal__footer button {
+    width: 40%;
+}

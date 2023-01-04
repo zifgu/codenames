@@ -1,0 +1,77 @@
+.card-grid {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+    gap: 0.5rem;
+
+    text-align: center;
+}
+
+.codename-card {
+    display: flex;
+    flex-direction: column;
+
+    border-radius: var(--bs-border-radius-lg);
+    padding: 0.5em;
+}
+
+.codename-card__label {
+    position: relative;
+    top: 50%;
+
+    border-radius: var(--bs-border-radius);
+    padding: 0.25em 0;
+
+    font-family: var(--codename-font);
+    font-size: 20px;
+}
+
+.codename-card.red {
+    background-color: var(--red-1);
+    color: white;
+}
+
+.codename-card.red > .codename-card__label {
+    background-color: var(--red-2);
+}
+
+.codename-card.blue {
+    background-color: var(--blue-1);
+    color: white;
+}
+
+.codename-card.blue > .codename-card__label {
+    background-color: var(--blue-2);
+}
+
+.codename-card.bystander {
+    background-color: var(--light-1);
+    color: black;
+}
+
+.codename-card.bystander > .codename-card__label {
+    background-color: var(--light-2);
+}
+
+.codename-card.assassin {
+    background-color: var(--dark-1);
+    color: white;
+}
+
+.codename-card.assassin > .codename-card__label {
+    background-color: var(--dark-2);
+}
+
+.codename-card.hidden {
+    background-color: var(--gray-1);
+    color: white;
+}
+
+.codename-card.hidden > .codename-card__label {
+    background-color: var(--gray-2);
+}
+
+.codename-card.revealed {
+    opacity: 40%;
+}

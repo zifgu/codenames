@@ -1,47 +1,65 @@
+@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Signika&display=swap');
+
+body {
+    /* Fonts */
+    --text-font: "Signika", sans-serif;
+    --codename-font: "Source Code Pro", monospace;
+
+    /* Colours */
+    --red-1: #c52f36;
+    --red-2: #92252A;
+    --blue-1: #1F5CE9;
+    --blue-2: #1A439F;
+    --gray-1: #656565;
+    --gray-2: #474747;
+    --light-1: #E1E1E1;
+    --light-2: #C8C8C8;
+    --dark-1: #232323;
+    --dark-2: #000000;
+
+    /* Global styles */
+    background-color: black;
+
+    font-family: var(--text-font);
+    font-size: 18px;
+    color: var(--bs-light);
+}
+
 .game {
     height: 100vh;
+    overflow: hidden;
 
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
+    justify-content: space-between;
     align-items: center;
-
-    background-color: black;
-    color: var(--bs-light);
-
-    text-align: center;
 }
 
-.codename-card {
-    border-radius: var(--bs-border-radius);
+.game > div:first-child {
+    margin-top: 3rem;
+}
+.game > div:last-child {
+    margin-bottom: 3rem;
 }
 
-.codename-card.red {
-    background-color: var(--bs-red);
-    color: var(--bs-white);
+/* Global utility classes */
+.text-red {
+    color: var(--red-1);
 }
 
-.codename-card.blue {
-    background-color: var(--bs-blue);
-    color: var(--bs-white);
+.text-blue {
+    color: var(--blue-1);
 }
 
-.codename-card.bystander {
-    background-color: var(--bs-light);
-    color: var(--bs-dark);
+.text-gray {
+    color: var(--gray-1);
 }
 
-.codename-card.assassin {
-    background-color: var(--bs-dark);
-    color: var(--bs-white);
+.bg-red {
+    background-color: var(--red-2);
 }
 
-.codename-card.hidden {
-    background-color: var(--bs-gray);
-    color: var(--bs-light);
-    border: 4px solid var(--bs-light);
-}
-
-.codename-card.revealed {
-    opacity: 50%;
+.bg-blue {
+    background-color: var(--blue-2);
 }

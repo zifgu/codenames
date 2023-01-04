@@ -1,0 +1,42 @@
+.team-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.team-panel__tab {
+    /* position above first panel */
+    position: absolute;
+    transform: translateY(-100%);
+
+    align-self: flex-start; /* don't stretch */
+
+    /* tab appearance */
+    border-top-left-radius: var(--bs-border-radius);
+    border-top-right-radius: var(--bs-border-radius);
+    padding: 0.25em 1em;
+    text-transform: uppercase;
+}
+
+.team-panel > div:nth-child(2) {
+    border-top-left-radius: 0; /* to align with tab */
+}
+
+.score, .players, .history {
+    border-radius: var(--bs-border-radius-lg);
+    background-color: var(--dark-1);
+    padding: 0.5em;
+}
+
+.players__heading {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.history {
+    flex-grow: 1;
+    min-height: 0;
+    overflow: auto;
+}

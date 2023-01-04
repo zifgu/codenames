@@ -1,8 +1,9 @@
 import React from "react";
-import Button from "react-bootstrap/Button";
 import {Clue, Role, Team} from "../types/types";
 import {useAppSelector} from "../redux/hooks";
 import {selectPlayerTeam} from "../slices/gameSlice";
+import { Button } from "./Button";
+import "./TeamPanel.css";
 
 export function TeamPanel({team, onJoinTeam}: { team: Team, onJoinTeam: (team: Team, role: Role) => void }) {
   const gameState = useAppSelector(state => state.root.game);
@@ -10,8 +11,10 @@ export function TeamPanel({team, onJoinTeam}: { team: Team, onJoinTeam: (team: T
   if (gameState === null) return null;
 
   return (
-    <div className="h-100 d-flex flex-column gap-2">
-      {team}
+    <div className="team-panel">
+      <div className={`team-panel__tab bg-${team}`}>
+        {team}
+      </div>
       <ScorePanel
         score={gameState.score[team]}
         targetScore={gameState.targetScore[team]}
@@ -26,7 +29,7 @@ export function TeamPanel({team, onJoinTeam}: { team: Team, onJoinTeam: (team: T
 
 function ScorePanel({score, targetScore}: { score: number, targetScore: number }) {
   return (
-    <div className="border">Score: {score} / {targetScore}</div>
+    <div className="score">{score} / {targetScore} agents found</div>
   );
 }
 
@@ -41,47 +44,59 @@ function PlayersPanel({team, onJoinTeam}: { team: Team, onJoinTeam: (team: Team,
   const operatives = gameState.teams[team][Role.OPERATIVE].map((id) => gameState.players[id]);
 
   const handleJoinButtonClick = (role: Role) => onJoinTeam(team, role);
+  const placeholderIfEmpty = <div className="text-gray">None yet...</div>;
 
   return (
-    <div className="border">
-      Spymasters:
-      <div>
-        {
-          spymaster &&
-          <div key={spymaster.id}>{spymaster.id}</div>
+    <div className="players">
+      <div className="players__heading">
+        Spymaster:
+        {playerTeam === null &&
+          <Button
+            small
+            disabled={spymaster !== null}
+            onClick={() => handleJoinButtonClick(Role.SPYMASTER)}
+          >
+            Join
+          </Button>
         }
       </div>
-      <Button
-        disabled={playerTeam !== null || spymaster !== null}
-        onClick={() => handleJoinButtonClick(Role.SPYMASTER)}
-      >
-        Join as spymaster
-      </Button>
-      Operatives:
-      <div>
-        {
+      {
+        spymaster ?
+          <div className={`text-${team}`}>{spymaster.id}</div> :
+          placeholderIfEmpty
+      }
+      <div className="players__heading mt-2">
+        Operatives:
+        {playerTeam === null &&
+          <Button
+            small
+            onClick={() => handleJoinButtonClick(Role.OPERATIVE)}
+          >
+            Join
+          </Button>
+        }
+      </div>
+      {
+        operatives.length > 0 ?
           operatives.map((playerData) => (
-            <div key={playerData.id}>{playerData.id}</div>
-          ))
-        }
-      </div>
-      <Button
-        disabled={playerTeam !== null}
-        onClick={() => handleJoinButtonClick(Role.OPERATIVE)}
-      >
-        Join as operative
-      </Button>
+            <div className={`text-${team}`} key={playerData.id}>{playerData.id}</div>
+          )) :
+          placeholderIfEmpty
+      }
     </div>
   );
 }
 
 function HistoryPanel({pastClues}: { pastClues: Clue[] }) {
   return (
-    <div className="flex-grow-1 border">
+    <div className="history">
+      <div className="mb-2">Clues:</div>
       {
-        pastClues.map((clue) => (
-          <div key={clue.word}>{clue.word} ({clue.number})</div>
-        ))
+        pastClues.length > 0 ?
+          pastClues.reverse().map((clue) => (
+            <div key={clue.word}>{clue.word} ({clue.number})</div>
+          )) :
+          <div className="text-gray">None yet...</div>
       }
     </div>
   );
