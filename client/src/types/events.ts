@@ -1,4 +1,4 @@
-import {CardData, CardTeam, Clue, GameState, PlayerData, PlayerId, Role, Score, Team, Turn} from "./types";
+import {CardData, CardTeam, Clue, GameState, PlayerData, PlayerId, Role, RoomId, Score, Team, Turn} from "./types";
 
 export interface ServerToClientEvents {
   playerJoin: (player: PlayerData) => void;
@@ -13,7 +13,8 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
-  join: (playerId: PlayerId, callback: (gameState: GameState | null) => void) => void;
+  createGame: (playerId: PlayerId, callback: (roomId: RoomId, gameState: GameState) => void) => void;
+  joinGame: (playerId: PlayerId, roomId: RoomId, callback: (roomId: RoomId | null, gameState: GameState | null) => void) => void;
   joinTeam: (team: Team, role: Role, callback: (cards?: CardData[]) => void) => void;
 
   submitClue: (clue: Clue) => void;

@@ -2,14 +2,9 @@ import express from 'express';
 import http from 'http';
 import {Server} from 'socket.io';
 import {ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData} from "./types/events";
-import {
-  CardTeam,
-  GameState,
-  getOppositeTeam,
-  PlayerData,
-  Role, Team,
-} from "./types/types";
+import {CardTeam, GameState, getOppositeTeam, PlayerData, Role, Room, RoomId, Team,} from "./types/types";
 import {getRandomCards} from "./generation";
+import {nanoid} from "nanoid";
 
 const app = express();
 const server = http.createServer(app);
@@ -26,7 +21,9 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
 
 const port = 3001;
 
-const game: GameState = {
+const rooms: {[id: RoomId]: Room} = {};
+
+const newGame = (): GameState => ({
   players: {},
   teams: {
     [CardTeam.RED]: {
@@ -55,7 +52,7 @@ const game: GameState = {
     [CardTeam.RED]: 9,
     [CardTeam.BLUE]: 8,
   },
-};
+});
 
 const filterGame = (gameState: GameState) => {
   const copy = {...gameState};
@@ -72,23 +69,53 @@ const filterGame = (gameState: GameState) => {
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  socket.on("join", (playerId, callback) => {
-    if (playerId in game.players) {
-      console.log(`Error: nickname ${playerId} in use`);
+  socket.on("createGame", (playerId, callback) => {
+    const roomId: RoomId = nanoid();
+    const game = newGame();
+    rooms[roomId] = {id: roomId, game};
 
-      callback(null);
+    console.log(`Room ${roomId} created by player ${playerId}`);
+
+    socket.join(roomId);
+    socket.data.roomId = roomId;
+    socket.data.playerId = playerId;
+
+    const playerData: PlayerData = {id: playerId, team: null, role: null};
+    game.players[playerId] = playerData;
+
+    console.log(`Player ${playerId} joined room ${roomId}`);
+    console.log(game);
+
+    callback(roomId, filterGame(game));
+  });
+
+  socket.on("joinGame", (playerId, roomId, callback) => {
+    if (!(roomId in rooms)) {
+      console.log(`Error: room ${roomId} not found`);
+
+      callback(null, null);
     } else {
-      socket.data.id = playerId;
+      const game = rooms[roomId].game;
+      if (playerId in game.players) {
+        console.log(`Error: nickname ${playerId} in use`);
 
-      const playerData: PlayerData = {id: playerId, team: null, role: null};
-      game.players[playerId] = playerData;
+        // TODO:
+        callback(roomId, null);
+      } else {
+        socket.join(roomId);
+        socket.data.roomId = roomId;
+        socket.data.playerId = playerId;
 
-      console.log(`Player ${playerId} joined`);
-      console.log(game);
+        const playerData: PlayerData = {id: playerId, team: null, role: null};
+        game.players[playerId] = playerData;
 
-      callback(filterGame(game));
+        console.log(`Player ${playerId} joined room ${roomId}`);
+        console.log(game);
 
-      socket.broadcast.emit("playerJoin", playerData);
+        callback(roomId, filterGame(game));
+
+        socket.to(roomId).emit("playerJoin", playerData);
+      }
     }
   });
 
@@ -96,9 +123,13 @@ io.on("connection", (socket) => {
 
   socket.on("joinTeam", (team, role, callback) => {
     // Do nothing if player already has a team/role
-    const playerId = socket.data.id;
+    const playerId = socket.data.playerId;
+    const roomId = socket.data.roomId;
+    if (!playerId || !roomId || !(roomId in rooms)) return;
 
-    if (playerId && !game.players[playerId].team && !game.players[playerId].role) {
+    const game = rooms[roomId].game;
+
+    if (!game.players[playerId].team && !game.players[playerId].role) {
       game.players[playerId].team = team;
       game.players[playerId].role = role;
 
@@ -113,13 +144,16 @@ io.on("connection", (socket) => {
       console.log(`Player ${playerId} joined team ${team} as a ${role}`);
       console.log(game);
 
-      io.emit("playerJoinTeam", playerId, team, role);
+      io.in(roomId).emit("playerJoinTeam", playerId, team, role);
     }
   });
 
   socket.on("submitClue", (clue) => {
-    const playerId = socket.data.id;
-    if (!playerId) return;
+    const playerId = socket.data.playerId;
+    const roomId = socket.data.roomId;
+    if (!playerId || !roomId || !(roomId in rooms)) return;
+
+    const game = rooms[roomId].game;
 
     // Do nothing if player is not allowed to submit clues
     const playerTeam = game.players[playerId].team;
@@ -135,13 +169,16 @@ io.on("connection", (socket) => {
       console.log(`Player ${playerId} gave clue ${clue.word} (${clue.number})`);
       console.log(game);
 
-      io.emit("newClue", playerId, clue, game.turn);
+      io.in(roomId).emit("newClue", playerId, clue, game.turn);
     }
   });
 
   socket.on("submitGuess", (cardIndex) => {
-    const playerId = socket.data.id;
-    if (!playerId) return;
+    const playerId = socket.data.playerId;
+    const roomId = socket.data.roomId;
+    if (!playerId || !roomId || !(roomId in rooms)) return;
+
+    const game = rooms[roomId].game;
 
     // Do nothing if player is not allowed to submit guesses
     const playerTeam = game.players[playerId].team;
@@ -176,17 +213,20 @@ io.on("connection", (socket) => {
       console.log(`Player ${playerId} guessed card ${cardIndex} '${card.codename}' which was ${card.team}`);
       console.log(game);
 
-      io.emit("newGuess", playerId, cardIndex, card.team, game.score, game.turn);
+      io.in(roomId).emit("newGuess", playerId, cardIndex, card.team, game.score, game.turn);
 
       if (winner) {
-        io.emit("win", winner);
+        io.in(roomId).emit("win", winner);
       }
     }
   });
 
   socket.on("endTurn", () => {
-    const playerId = socket.data.id;
-    if (!playerId) return;
+    const playerId = socket.data.playerId;
+    const roomId = socket.data.roomId;
+    if (!playerId || !roomId || !(roomId in rooms)) return;
+
+    const game = rooms[roomId].game;
 
     // Do nothing if player is not allowed to end turn
     const playerTeam = game.players[playerId].team;
@@ -199,15 +239,18 @@ io.on("connection", (socket) => {
       console.log(`Player ${playerId} ended their turn`);
       console.log(game);
 
-      io.emit("newTurn", game.turn);
+      io.in(roomId).emit("newTurn", game.turn);
     }
   });
 
   socket.on("disconnect", () => {
     console.log("A user disconnected");
-    const playerId = socket.data.id;
+    const playerId = socket.data.playerId;
+    const roomId = socket.data.roomId;
 
-    if (playerId) {
+    if (playerId && roomId && roomId in rooms) {
+      const game = rooms[roomId].game;
+
       if (game.teams[CardTeam.RED][Role.SPYMASTER] === playerId) {
         game.teams[CardTeam.RED][Role.SPYMASTER] = null;
       } else if (game.teams[CardTeam.BLUE][Role.SPYMASTER] === playerId) {
@@ -219,10 +262,10 @@ io.on("connection", (socket) => {
 
       delete game.players[playerId];
 
-      console.log(`Player ${playerId} left`);
+      console.log(`Player ${playerId} left room ${roomId}`);
       console.log(game);
 
-      io.emit("playerLeave", playerId);
+      io.in(roomId).emit("playerLeave", playerId);
     }
   });
 });

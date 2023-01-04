@@ -1,4 +1,5 @@
 export type PlayerId = string;
+export type RoomId = string;
 
 export enum CardTeam {
     RED = "red",

@@ -7,19 +7,21 @@ import {
   GameState,
   PlayerData,
   PlayerId,
-  Role, Score,
+  Role, RoomId, Score,
   Team, Turn
 } from "../types/types";
 
 interface State {
   game: GameState | null,
-  playerId: string,
+  playerId: PlayerId,
+  roomId: RoomId,
   winner: null | Team,
 }
 
 const initialState: State = {
   game: null,
   playerId: "",
+  roomId: "",
   winner: null,
 };
 
@@ -31,8 +33,11 @@ export const gameSlice = createSlice({
   name: 'root',
   initialState,
   reducers: {
-    setPlayer: (state, action: PayloadAction<string>) => {
+    setPlayer: (state, action: PayloadAction<PlayerId>) => {
       state.playerId = action.payload;
+    },
+    setRoomId: (state, action: PayloadAction<RoomId>) => {
+      state.roomId = action.payload;
     },
     setWinner: (state, action: PayloadAction<Team>) => {
       state.winner = action.payload;
@@ -105,7 +110,7 @@ export const gameSlice = createSlice({
   },
 });
 
-export const {setPlayer, setWinner, setGame, addPlayer, addPlayerToTeam, addClue, removePlayer, setScore, setTurn, revealCard, setCards} = gameSlice.actions;
+export const {setPlayer, setRoomId, setWinner, setGame, addPlayer, addPlayerToTeam, addClue, removePlayer, setScore, setTurn, revealCard, setCards} = gameSlice.actions;
 
 export const selectPlayerTeam = (state: RootState) => getPlayerTeam(state.root);
 export const selectPlayerRole = (state: RootState) => getPlayerRole(state.root);

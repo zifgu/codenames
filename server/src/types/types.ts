@@ -1,4 +1,5 @@
 export type PlayerId = string;
+export type RoomId = string;
 
 export enum CardTeam {
     RED = "red",
@@ -68,6 +69,11 @@ export interface GameState {
     score: Score,
     targetScore: Score,
     pastClues: Clue[],
+}
+
+export interface Room {
+    id: RoomId;
+    game: GameState;
 }
 
 // Utility functions

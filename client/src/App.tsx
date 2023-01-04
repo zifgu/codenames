@@ -4,7 +4,7 @@ import './App.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import {CardTeam, Clue, Role, Team,} from "./types/types";
+import {CardTeam, Clue, Role, RoomId, Team,} from "./types/types";
 import {
   addClue,
   addPlayer,
@@ -14,6 +14,7 @@ import {
   setCards,
   setGame,
   setPlayer,
+  setRoomId,
   setScore,
   setTurn,
   setWinner,
@@ -33,6 +34,7 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://lo
 export function App() {
   const dispatch = useAppDispatch();
   const gameState = useAppSelector(state => state.root.game);
+  const [room, setRoom] = useState<RoomId>("");
   const [nickname, setNickname] = useState<string>("");
 
   useEffect(() => {
@@ -90,47 +92,101 @@ export function App() {
     };
   }, [dispatch]);
 
-  const onConnect = () => {
-    socket.emit("join", nickname, (gameState) => {
+  const handleCreateGame = () => {
+    socket.emit("createGame", nickname, (roomId, gameState) => {
       dispatch(addPlayer({id: nickname, team: null, role: null}));
+      dispatch(setRoomId(roomId));
       dispatch(setPlayer(nickname));
       dispatch(setGame(gameState));
     });
-  }
+  };
+
+  const handleJoinGame = () => {
+    socket.emit("joinGame", nickname, room, (roomId, gameState) => {
+      if (roomId !== null && gameState !== null) {
+        dispatch(addPlayer({id: nickname, team: null, role: null}));
+        dispatch(setRoomId(roomId));
+        dispatch(setPlayer(nickname));
+        dispatch(setGame(gameState));
+      }
+
+      // TODO: error handling
+    });
+  };
 
   return (
     <>
       {
         gameState ?
           <Game/> :
-          <JoinPage
+          <HomePage
             nickname={nickname}
+            roomId={room}
             onChangeNickname={(newNickname) => setNickname(newNickname)}
-            onConnect={onConnect}
+            onChangeRoomId={(newRoomId) => setRoom(newRoomId)}
+            onCreateGame={handleCreateGame}
+            onJoinGame={handleJoinGame}
           />
       }
     </>
   );
 }
 
-function JoinPage({nickname, onChangeNickname, onConnect}: {nickname: string, onChangeNickname: (nickname: string) => void, onConnect: () => void}) {
-  return (
-    <div className="game">
-      <Row className="justify-content-center">
-        <Col xs={8}>
-          <Input
-            type="text"
-            placeholder="Enter a nickname"
-            value={nickname}
-            onChange={(e) => onChangeNickname(e.currentTarget.value)}
-          />
-        </Col>
-        <Col xs={2}>
-          <Button onClick={onConnect}>Connect</Button>
-        </Col>
-      </Row>
-    </div>
-  );
+interface HomePageProps {
+  nickname: string,
+  roomId: RoomId,
+  onChangeNickname: (nickname: string) => void,
+  onChangeRoomId: (roomId: RoomId) => void,
+  onCreateGame: () => void,
+  onJoinGame: () => void,
+}
+
+function HomePage({nickname, roomId, onChangeNickname, onChangeRoomId, onCreateGame, onJoinGame}: HomePageProps) {
+  const [page, setPage] = useState<"home"|"create"|"join">("home");
+  if (page === "home") {
+    return (
+      <div className="fullscreen-center">
+        <h1>CODENAMES</h1>
+        <Button onClick={() => setPage("create")}>Create game</Button>
+        <Button onClick={() => setPage("join")}>Join game</Button>
+      </div>
+    );
+  } else if (page === "create") {
+    return (
+      <div className="fullscreen-center">
+        <h1>Create game</h1>
+        Give yourself a nickname:
+        <Input
+          type="text"
+          placeholder="Enter a nickname"
+          value={nickname}
+          onChange={(e) => onChangeNickname(e.currentTarget.value)}
+        />
+        <Button onClick={onCreateGame}>Create</Button>
+      </div>
+    );
+  } else {
+    return (
+      <div className="fullscreen-center">
+        <h1>Join game</h1>
+        Enter Room ID:
+        <Input
+          type="text"
+          placeholder="Room ID"
+          value={roomId}
+          onChange={(e) => onChangeRoomId(e.currentTarget.value)}
+        />
+        Give yourself a nickname:
+        <Input
+          type="text"
+          placeholder="Enter a nickname"
+          value={nickname}
+          onChange={(e) => onChangeNickname(e.currentTarget.value)}
+        />
+        <Button onClick={onJoinGame}>Join</Button>
+      </div>
+    );
+  }
 }
 
 function Game() {
