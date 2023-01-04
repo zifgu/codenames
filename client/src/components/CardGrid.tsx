@@ -32,16 +32,15 @@ function Card({index, cardData, onSubmitGuess}: { index: number, cardData: CardD
     }
   }
 
-  // TODO: may be easier if this was just a button
   return (
-    <div
+    <button
       className={`codename-card ${cardClass}${revealedClass}${interactibleClass}`}
       tabIndex={canGuessCard ? 0 : -1}
-        onClick={handleGuess}
+      onClick={handleGuess}
     >
       <div className="codename-card__label">
         {cardData.codename.toUpperCase()}
       </div>
-    </div>
+    </button>
   );
 }

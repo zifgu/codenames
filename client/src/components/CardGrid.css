@@ -9,16 +9,20 @@
 }
 
 .codename-card {
-    display: flex;
-    flex-direction: column;
+    /* override default button styles */
+    border: none;
+    cursor: default!important;
+    user-select: text;
 
+    display: block;
     border-radius: var(--bs-border-radius-lg);
     padding: 0.5em;
 }
 
 .codename-card__label {
     position: relative;
-    top: 50%;
+    top: 20%; /* todo: this isn't aligned properly */
+    width: 100%;
 
     border-radius: var(--bs-border-radius);
     padding: 0.25em 0;
@@ -72,11 +76,21 @@
     background-color: var(--gray-2);
 }
 
-.codename-card.hidden.interactible:hover {
-    filter: brightness(130%);
-    transform: translateY(-0.25em);
-}
-
 .codename-card.revealed {
     opacity: 40%;
+}
+
+.codename-card.hidden.interactible {
+    cursor: pointer!important;
+    user-select: none;
+}
+
+.codename-card.hidden.interactible:hover, .codename-card.hidden.interactible:focus {
+    outline: none;
+    filter: brightness(150%);
+    transform: translateY(-0.25rem);
+}
+
+.codename-card.hidden.interactible:active {
+    filter: brightness(130%);
 }
