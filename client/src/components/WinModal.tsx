@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import Modal from "react-bootstrap/Modal";
 import {useAppSelector} from "../redux/hooks";
 import {Button} from "./Button";
@@ -6,13 +6,20 @@ import "./WinModal.css";
 import {CardTeam} from "../types/types";
 
 export function GameWonModal() {
+  const [show, setShow] = useState(false);
   const winner = useAppSelector(state => state.room.game ? state.room.game.winner : null);
   const score = useAppSelector(state => state.room.game ? state.room.game.score : null);
+
+  useEffect(() => {
+    setShow(winner !== null);
+  }, [winner]);
+
+  const handleClose = () => setShow(false);
 
   return (
     <Modal
       className="win-modal"
-      show={winner !== null}
+      show={show}
       centered
       backdrop="static"
       keyboard={false}
@@ -31,7 +38,9 @@ export function GameWonModal() {
         }
       </div>
       <div className="win-modal__footer pb-4">
-        <Button>Close</Button>
+        <Button onClick={handleClose}>
+          Close
+        </Button>
         <Button>New game</Button>
       </div>
     </Modal>
