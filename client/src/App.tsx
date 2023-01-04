@@ -28,6 +28,7 @@ import {TeamPanel} from "./components/TeamPanel";
 import {CardGrid} from "./components/CardGrid";
 import {Button} from "./components/Button";
 import {Input} from "./components/Input";
+import {GameMenu} from "./components/GameMenu";
 
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://localhost:3001`);
 
@@ -218,12 +219,13 @@ function Game() {
   return (
     <div className="game">
       <GameWonModal />
+      <GameMenu />
       <Header
         turn={gameState.turn}
         onSubmitClue={handleSubmitClue}
         onEndTurn={handleEndTurn}
       />
-      <Container fluid className="h-75">
+      <Container fluid className="game-main">
         <Row className="h-100">
           <Col xs={2} className="h-100">
             <TeamPanel

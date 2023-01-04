@@ -12,9 +12,9 @@ input:enabled:hover, input:enabled:active {
     background-color: white;
 }
 
-input:focus {
-    outline: 5px solid rgba(255, 255, 255, 0.25);
-}
+/*input:focus {*/
+/*    outline: 5px solid rgba(255, 255, 255, 0.25);*/
+/*}*/
 
 input:disabled {
     opacity: 80%;

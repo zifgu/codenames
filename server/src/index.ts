@@ -21,6 +21,8 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
 
 const port = 3001;
 
+// TODO: break into files
+// TODO: delete stale rooms somehow
 const rooms: {[id: RoomId]: Room} = {};
 
 const newGame = (): GameState => ({

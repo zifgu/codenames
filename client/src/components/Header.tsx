@@ -17,7 +17,7 @@ export function Header({turn, onSubmitClue, onEndTurn}: HeaderProps) {
   const playerRole = useAppSelector(selectPlayerRole);
   const isPlayerTurn = useAppSelector(selectIsPlayerTurn);
 
-  const roleAction = turn.role === Role.SPYMASTER ? "spymaster is now giving a clue" : "operatives are now guessing";
+  const roleAction = turn.role === Role.SPYMASTER ? "spymaster is giving a clue" : "operatives are guessing";
   let message: ReactNode;
   let display: ReactNode = null;
 

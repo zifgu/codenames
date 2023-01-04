@@ -1,4 +1,4 @@
-import React from "react";
+import React, {forwardRef} from "react";
 import "./Button.css";
 
 interface ButtonProps extends React.HTMLProps<HTMLButtonElement> {
@@ -7,15 +7,20 @@ interface ButtonProps extends React.HTMLProps<HTMLButtonElement> {
   pushed?: boolean,
 }
 
-export function Button({children, variant, small, pushed, ...props}: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({children, variant, small, pushed, ...props}: ButtonProps, ref) => {
   const variantClass = variant ? variant : "";
   const sizeClass = small ? "sm" : "";
   const pushedClass = pushed ? "selected" : "";
   return (
-    <button {...props} type="button" className={`${props.className} ${variantClass} ${sizeClass} ${pushedClass}`}>
+    <button
+      ref={ref}
+      {...props}
+      type="button"
+      className={`${props.className} ${variantClass} ${sizeClass} ${pushedClass}`}
+    >
       <span className="front">
         {children}
       </span>
     </button>
   );
-}
+});

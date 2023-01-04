@@ -26,15 +26,13 @@ body {
     color: var(--bs-light);
 }
 
-.fullscreen-center {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 1em;
+/* Override Bootstrap styles */
+.tooltip {
+    --bs-tooltip-bg: white;
+    --bs-tooltip-color: black;
 }
 
+/* Game view layout */
 .game {
     height: 100vh;
     overflow: hidden;
@@ -44,15 +42,24 @@ body {
     justify-content: space-between;
     align-items: center;
 }
-
-.game > div:first-child {
-    margin-top: 3rem;
+.game-menu {
+    margin-top: 1rem;
 }
-.game > div:last-child {
+.game-main {
+    height: 70%;
     margin-bottom: 3rem;
 }
 
-/* Global utility classes */
+/* Utility classes */
+.fullscreen-center {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+}
+
 .text-red {
     color: var(--red-1);
 }

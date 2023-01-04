@@ -1,0 +1,14 @@
+.game-menu, .game-invite {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+}
+
+.game-menu {
+    width: 100%;
+    gap: 0.5em;
+}
+
+.game-invite {
+    gap: 0.25em;
+}
