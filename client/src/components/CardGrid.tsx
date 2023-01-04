@@ -1,6 +1,6 @@
 import React from "react";
 import {useAppSelector} from "../redux/hooks";
-import {selectIsPlayerTurn, selectPlayerRole} from "../slices/gameSlice";
+import {selectIsPlayerTurn, selectPlayerRole, selectWinner} from "../slices/gameSlice";
 import {CardData, Role} from "../types/types";
 import "./CardGrid.css";
 
@@ -19,11 +19,12 @@ export function CardGrid({cards, onSubmitGuess}: { cards: CardData[], onSubmitGu
 function Card({index, cardData, onSubmitGuess}: { index: number, cardData: CardData, onSubmitGuess: (cardIndex: number) => void }) {
   const playerRole = useAppSelector(selectPlayerRole);
   const isPlayerTurn = useAppSelector(selectIsPlayerTurn);
+  const winner = useAppSelector(selectWinner);
 
   const cardClass = cardData.team; // classes named after team strings
-  const revealedClass = (playerRole === Role.SPYMASTER && cardData.revealed) ? " revealed" : "";
+  const revealedClass = cardData.revealed && (playerRole === Role.SPYMASTER || winner) ? " revealed" : "";
 
-  const canGuessCard = isPlayerTurn && playerRole === Role.OPERATIVE && !cardData.revealed;
+  const canGuessCard = isPlayerTurn && playerRole === Role.OPERATIVE && !cardData.revealed && !winner;
   const interactibleClass = canGuessCard ? " interactible" : "";
 
   const handleGuess = () => {

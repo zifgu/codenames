@@ -18,7 +18,7 @@ import {
   setRoomId,
   setScore,
   setTurn,
-  setWinner,
+  setWinner, selectGame,
 } from "./slices/gameSlice";
 import io, {Socket} from 'socket.io-client';
 import {ClientToServerEvents, ServerToClientEvents} from "./types/events";
@@ -34,7 +34,7 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://lo
 
 export function App() {
   const dispatch = useAppDispatch();
-  const gameState = useAppSelector(state => state.room.game);
+  const gameState = useAppSelector(selectGame);
   const [room, setRoom] = useState<RoomId>("");
   const [nickname, setNickname] = useState<string>("");
 
@@ -76,13 +76,15 @@ export function App() {
       dispatch(setTurn(newTurn));
     });
 
-    socket.on("win", (winningTeam) => {
+    socket.on("win", (winningTeam, cards) => {
       console.log(`Received win`);
       dispatch(setWinner(winningTeam));
+      dispatch(setCards(cards));
     });
 
     return () => {
       socket.off("connect");
+
       socket.off("playerJoin");
       socket.off("playerJoinTeam");
       socket.off("playerLeave");
@@ -135,7 +137,7 @@ export function App() {
 
 function Game() {
   const dispatch = useAppDispatch();
-  const gameState = useAppSelector(state => state.room.game);
+  const gameState = useAppSelector(selectGame);
 
   if (gameState === null) return null;
 

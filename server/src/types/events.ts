@@ -9,7 +9,7 @@ export interface ServerToClientEvents {
   newGuess: (playerId: PlayerId, cardIndex: number, colour: CardTeam, newScore: Score, newTurn: Turn) => void;
   newTurn: (newTurn: Turn) => void;
 
-  win: (winningTeam: Team) => void;
+  win: (winningTeam: Team, cards: CardData[]) => void;
 }
 
 export interface ClientToServerEvents {

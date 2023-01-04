@@ -1,12 +1,12 @@
 import React from "react";
 import {Clue, Role, Team} from "../types/types";
 import {useAppSelector} from "../redux/hooks";
-import {selectPlayerTeam} from "../slices/gameSlice";
+import {selectGame, selectPlayerTeam} from "../slices/gameSlice";
 import { Button } from "./Button";
 import "./TeamPanel.css";
 
 export function TeamPanel({team, onJoinTeam}: { team: Team, onJoinTeam: (team: Team, role: Role) => void }) {
-  const gameState = useAppSelector(state => state.room.game);
+  const gameState = useAppSelector(selectGame);
 
   if (gameState === null) return null;
 
@@ -34,7 +34,7 @@ function ScorePanel({score, targetScore}: { score: number, targetScore: number }
 }
 
 function PlayersPanel({team, onJoinTeam}: { team: Team, onJoinTeam: (team: Team, role: Role) => void}) {
-  const gameState = useAppSelector(state => state.room.game);
+  const gameState = useAppSelector(selectGame);
   const playerTeam = useAppSelector(selectPlayerTeam);
 
   if (gameState === null) return null;

@@ -6,6 +6,7 @@ import {Button} from "./Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCopy, faGear, faRightFromBracket} from "@fortawesome/free-solid-svg-icons";
 import "./GameMenu.css";
+import {selectRoomId} from "../slices/gameSlice";
 
 export function GameMenu({onLeaveGame}: {onLeaveGame: () => void}) {
   const handleLeaveButtonClick = () => onLeaveGame();
@@ -24,7 +25,7 @@ export function GameMenu({onLeaveGame}: {onLeaveGame: () => void}) {
 }
 
 function RoomInvite() {
-  const roomId = useAppSelector(state => state.room.roomId);
+  const roomId = useAppSelector(selectRoomId);
   const [showTooltip, setShowTooltip] = useState(false);
 
   const handleCopyButtonClick = async () => {

@@ -4,11 +4,12 @@ import {useAppSelector} from "../redux/hooks";
 import {Button} from "./Button";
 import "./WinModal.css";
 import {CardTeam} from "../types/types";
+import {selectScore, selectWinner} from "../slices/gameSlice";
 
 export function GameWonModal() {
   const [show, setShow] = useState(false);
-  const winner = useAppSelector(state => state.room.game ? state.room.game.winner : null);
-  const score = useAppSelector(state => state.room.game ? state.room.game.score : null);
+  const winner = useAppSelector(selectWinner);
+  const score = useAppSelector(selectScore);
 
   useEffect(() => {
     setShow(winner !== null);

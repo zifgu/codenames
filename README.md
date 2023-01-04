@@ -2,7 +2,6 @@
 
 ## Wishlist
 - Starting a new game in the same room
-- Reveal all cards when game ends
 - Ability to change nickname
 - Official spectator role
 - Game settings

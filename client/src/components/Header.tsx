@@ -1,7 +1,13 @@
 import React, {FormEvent, ReactNode, useState} from "react";
 import {useAppSelector} from "../redux/hooks";
 import {Clue, Role, Team} from "../types/types";
-import {selectIsPlayerTurn, selectPlayerRole, selectPlayerTeam} from "../slices/gameSlice";
+import {
+  selectIsPlayerTurn,
+  selectLatestClue,
+  selectPlayerRole,
+  selectPlayerTeam,
+  selectWinner
+} from "../slices/gameSlice";
 import {Button} from "./Button";
 import {Input} from "./Input";
 import "./Header.css";
@@ -13,6 +19,7 @@ interface HeaderProps {
 }
 
 export function Header({turn, onSubmitClue, onEndTurn}: HeaderProps) {
+  const winner = useAppSelector(selectWinner);
   const playerTeam = useAppSelector(selectPlayerTeam);
   const playerRole = useAppSelector(selectPlayerRole);
   const isPlayerTurn = useAppSelector(selectIsPlayerTurn);
@@ -21,7 +28,11 @@ export function Header({turn, onSubmitClue, onEndTurn}: HeaderProps) {
   let message: ReactNode;
   let display: ReactNode = null;
 
-  if (!playerRole || !playerTeam) {
+  if (winner) {
+    message = <>
+      The <span className={`text-${winner}`}>{winner}</span> team has won!
+    </>;
+  } else if (!playerRole || !playerTeam) {
     message = <>
       The <span className={`text-${turn.team}`}>{turn.team}</span> {roleAction}.
       Join a team to start playing!
@@ -127,9 +138,9 @@ function OperativeControls({onEndTurn}: {onEndTurn: () => void}) {
 }
 
 function LatestClue() {
-  const latestClue = useAppSelector(state => state.room.game && state.room.game.pastClues[state.room.game.pastClues.length - 1]);
+  const latestClue = useAppSelector(selectLatestClue);
   return (
-    latestClue ?
+    latestClue &&
       <div className="latest-clue">
         <div className={`clue-part ${latestClue.team}`}>
           {latestClue.word}
@@ -137,7 +148,6 @@ function LatestClue() {
         <div className={`clue-part ${latestClue.team}`}>
           {latestClue.number}
         </div>
-      </div> :
-      null
+      </div>
   );
 }

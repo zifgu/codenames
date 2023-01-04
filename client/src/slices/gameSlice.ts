@@ -23,8 +23,8 @@ const defaultState = (): State => ({
   roomId: "",
 });
 
-const getPlayerTeam = (state: State) => state.game?.players[state.playerId].team;
-const getPlayerRole = (state: State) => state.game?.players[state.playerId].role;
+const getPlayerTeam = (state: State) => state.game ? state.game.players[state.playerId].team : null;
+const getPlayerRole = (state: State) => state.game ? state.game.players[state.playerId].role : null;
 const isPlayerTurn = (state: State) => state.game && getPlayerTeam(state) === state.game.turn.team && getPlayerRole(state) === state.game.turn.role;
 
 export const gameSlice = createSlice({
@@ -117,8 +117,13 @@ export const gameSlice = createSlice({
 
 export const {reset, setPlayer, setRoomId, setWinner, setGame, addPlayer, addPlayerToTeam, addClue, removePlayer, setScore, setTurn, revealCard, setCards} = gameSlice.actions;
 
+export const selectRoomId = (state: RootState) => state.room.roomId;
+export const selectGame = (state: RootState) => state.room.game;
+export const selectScore = (state: RootState) => state.room.game ? state.room.game.score : null;
+export const selectWinner = (state: RootState) => state.room.game ? state.room.game.winner : null;
 export const selectPlayerTeam = (state: RootState) => getPlayerTeam(state.room);
 export const selectPlayerRole = (state: RootState) => getPlayerRole(state.room);
 export const selectIsPlayerTurn = (state: RootState) => isPlayerTurn(state.room);
+export const selectLatestClue = (state: RootState) => state.room.game && state.room.game.pastClues[state.room.game.pastClues.length - 1];
 
 export default gameSlice.reducer;

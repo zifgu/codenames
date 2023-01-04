@@ -113,7 +113,7 @@ io.on("connection", (socket) => {
 
       const winner = getWinner(roomId);
       if (winner) {
-        io.in(roomId).emit("win", winner);
+        io.in(roomId).emit("win", winner, getCards(roomId));
       }
     }
   });
