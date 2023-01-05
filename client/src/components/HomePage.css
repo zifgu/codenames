@@ -19,9 +19,3 @@
     width: 75%;
     margin-bottom: 1rem;
 }
-
-/* Modals */
-.creation-modal .modal-content {
-    background-color: var(--dark-1);
-    color: white;
-}

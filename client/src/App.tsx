@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import Container from 'react-bootstrap/Container';
@@ -18,7 +18,10 @@ import {
   setRoomId,
   setScore,
   setTurn,
-  setWinner, selectGame,
+  setWinner,
+  selectGame,
+  setPlayers,
+  clearPlayerTeams,
 } from "./slices/gameSlice";
 import io, {Socket} from 'socket.io-client';
 import {ClientToServerEvents, ServerToClientEvents} from "./types/events";
@@ -29,6 +32,7 @@ import {TeamPanel} from "./components/TeamPanel";
 import {CardGrid} from "./components/CardGrid";
 import {GameMenu} from "./components/GameMenu";
 import {HomePage} from "./components/HomePage";
+import {NewGameModal} from "./components/NewGameModal";
 
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://localhost:3001`);
 
@@ -80,6 +84,12 @@ export function App() {
       dispatch(setCards(cards));
     });
 
+    socket.on("newGame", (gameState) => {
+      console.log(`Received new game`);
+      dispatch(clearPlayerTeams());
+      dispatch(setGame(gameState));
+    });
+
     return () => {
       socket.off("connect");
 
@@ -90,6 +100,7 @@ export function App() {
       socket.off("newGuess");
       socket.off("newTurn");
       socket.off("win");
+      socket.off("newGame");
     };
   }, [dispatch]);
 
@@ -104,17 +115,17 @@ export function App() {
 
   const handleJoinGame = (room: RoomId, nickname: PlayerId) => {
     return new Promise<{roomError: boolean, nicknameError: boolean}>((resolve) => {
-      socket.emit("joinGame", nickname, room, (roomId, gameState) => {
+      socket.emit("joinGame", nickname, room, (roomId, players, gameState) => {
         if (roomId === null) {
           // Invalid room ID
           resolve({roomError: true, nicknameError: false});
-        } else if (gameState === null) {
+        } else if (gameState === null || players === null) {
           // Invalid nickname
           resolve({roomError: false, nicknameError: true});
         } else {
-          dispatch(addPlayer({id: nickname, team: null, role: null}));
           dispatch(setRoomId(roomId));
           dispatch(setPlayer(nickname));
+          dispatch(setPlayers(players));
           dispatch(setGame(gameState));
           resolve({roomError: false, nicknameError: false});
         }
@@ -139,6 +150,7 @@ export function App() {
 function Game() {
   const dispatch = useAppDispatch();
   const gameState = useAppSelector(selectGame);
+  const [showNewGameModal, setShowNewGameModal] = useState(false);
 
   if (gameState === null) return null;
 
@@ -165,12 +177,26 @@ function Game() {
   const handleLeaveGame = () => {
     socket.emit("leaveGame");
     dispatch(reset());
-  }
+  };
+
+  const handleNewGame = (startingTeam: Team) => {
+    socket.emit("resetGame", startingTeam);
+  };
 
   return (
     <div className="game">
-      <GameWonModal />
-      <GameMenu onLeaveGame={handleLeaveGame} />
+      <GameWonModal
+        onClickNewGame={() => setShowNewGameModal(true)}
+      />
+      <NewGameModal
+        show={showNewGameModal}
+        onClose={() => setShowNewGameModal(false)}
+        onNewGame={handleNewGame}
+      />
+      <GameMenu
+        onLeaveGame={handleLeaveGame}
+        onClickNewGame={() => setShowNewGameModal(true)}
+      />
       <Header
         turn={gameState.turn}
         onSubmitClue={handleSubmitClue}

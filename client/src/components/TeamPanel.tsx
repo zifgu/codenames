@@ -1,7 +1,7 @@
 import React from "react";
 import {Clue, Role, Team} from "../types/types";
 import {useAppSelector} from "../redux/hooks";
-import {selectGame, selectPlayerTeam} from "../slices/gameSlice";
+import {selectGame, selectPlayers, selectPlayerTeam} from "../slices/gameSlice";
 import { Button } from "./Button";
 import "./TeamPanel.css";
 
@@ -35,13 +35,14 @@ function ScorePanel({score, targetScore}: { score: number, targetScore: number }
 
 function PlayersPanel({team, onJoinTeam}: { team: Team, onJoinTeam: (team: Team, role: Role) => void}) {
   const gameState = useAppSelector(selectGame);
+  const players = useAppSelector(selectPlayers);
   const playerTeam = useAppSelector(selectPlayerTeam);
 
   if (gameState === null) return null;
 
   const spymasterId = gameState.teams[team][Role.SPYMASTER];
-  const spymaster = spymasterId ? gameState.players[spymasterId] : null;
-  const operatives = gameState.teams[team][Role.OPERATIVE].map((id) => gameState.players[id]);
+  const spymaster = spymasterId ? players[spymasterId] : null;
+  const operatives = gameState.teams[team][Role.OPERATIVE].map((id) => players[id]);
 
   const handleJoinButtonClick = (role: Role) => onJoinTeam(team, role);
   const placeholderIfEmpty = <div className="text-gray">None yet...</div>;

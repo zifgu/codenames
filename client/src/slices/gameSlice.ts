@@ -6,26 +6,28 @@ import {
   Clue,
   GameState,
   PlayerData,
-  PlayerId,
+  PlayerId, Players,
   Role, RoomId, Score,
   Team, Turn
 } from "../types/types";
 
-interface State {
+interface RoomState {
   game: GameState | null,
+  players: Players,
   playerId: PlayerId,
   roomId: RoomId,
 }
 
-const defaultState = (): State => ({
+const defaultState = (): RoomState => ({
   game: null,
+  players: {},
   playerId: "",
   roomId: "",
 });
 
-const getPlayerTeam = (state: State) => state.game ? state.game.players[state.playerId].team : null;
-const getPlayerRole = (state: State) => state.game ? state.game.players[state.playerId].role : null;
-const isPlayerTurn = (state: State) => state.game && getPlayerTeam(state) === state.game.turn.team && getPlayerRole(state) === state.game.turn.role;
+const getPlayerTeam = (state: RoomState) => state.players[state.playerId].team;
+const getPlayerRole = (state: RoomState) => state.players[state.playerId].role;
+const isPlayerTurn = (state: RoomState) => state.game && getPlayerTeam(state) === state.game.turn.team && getPlayerRole(state) === state.game.turn.role;
 
 export const gameSlice = createSlice({
   name: 'room',
@@ -48,19 +50,26 @@ export const gameSlice = createSlice({
     setGame: (state, action: PayloadAction<GameState | null>) => {
       state.game = action.payload;
     },
+    setPlayers: (state, action: PayloadAction<Players>) => {
+      state.players = action.payload;
+    },
+    clearPlayerTeams: (state) => {
+      for (let player of Object.values(state.players)) {
+        player.team = null;
+        player.role = null;
+      }
+    },
     addPlayer: (state, action: PayloadAction<PlayerData>) => {
-      if (!state.game) return;
-
-      state.game.players[action.payload.id] = action.payload;
+      state.players[action.payload.id] = action.payload;
     },
     addPlayerToTeam: (state, action: PayloadAction<{ playerId: PlayerId, team: Team, role: Role }>) => {
       if (!state.game) return;
 
       const {playerId, role, team} = action.payload;
 
-      if (!state.game.players[playerId].team && !state.game.players[playerId].role) {
-        state.game.players[playerId].team = team;
-        state.game.players[playerId].role = role;
+      if (!state.players[playerId].team && !state.players[playerId].role) {
+        state.players[playerId].team = team;
+        state.players[playerId].role = role;
 
         if (role === Role.SPYMASTER) {
           state.game.teams[team][role] = playerId;
@@ -70,19 +79,20 @@ export const gameSlice = createSlice({
       }
     },
     removePlayer: (state, action: PayloadAction<PlayerId>) => {
-      if (!state.game) return;
-
       const playerId = action.payload;
-      if (state.game.teams[CardTeam.RED][Role.SPYMASTER] === playerId) {
-        state.game.teams[CardTeam.RED][Role.SPYMASTER] = null;
-      } else if (state.game.teams[CardTeam.BLUE][Role.SPYMASTER] === playerId) {
-        state.game.teams[CardTeam.BLUE][Role.SPYMASTER] = null;
-      } else {
-        state.game.teams[CardTeam.RED][Role.OPERATIVE] = state.game.teams[CardTeam.RED][Role.OPERATIVE].filter((id) => id !== playerId);
-        state.game.teams[CardTeam.BLUE][Role.OPERATIVE] = state.game.teams[CardTeam.BLUE][Role.OPERATIVE].filter((id) => id !== playerId);
+      if (state.game) {
+        const playerId = action.payload;
+        if (state.game.teams[CardTeam.RED][Role.SPYMASTER] === playerId) {
+          state.game.teams[CardTeam.RED][Role.SPYMASTER] = null;
+        } else if (state.game.teams[CardTeam.BLUE][Role.SPYMASTER] === playerId) {
+          state.game.teams[CardTeam.BLUE][Role.SPYMASTER] = null;
+        } else {
+          state.game.teams[CardTeam.RED][Role.OPERATIVE] = state.game.teams[CardTeam.RED][Role.OPERATIVE].filter((id) => id !== playerId);
+          state.game.teams[CardTeam.BLUE][Role.OPERATIVE] = state.game.teams[CardTeam.BLUE][Role.OPERATIVE].filter((id) => id !== playerId);
+        }
       }
 
-      delete state.game.players[playerId];
+      delete state.players[playerId];
     },
     addClue: (state, action: PayloadAction<Clue>) => {
       if (!state.game) return;
@@ -115,10 +125,27 @@ export const gameSlice = createSlice({
   },
 });
 
-export const {reset, setPlayer, setRoomId, setWinner, setGame, addPlayer, addPlayerToTeam, addClue, removePlayer, setScore, setTurn, revealCard, setCards} = gameSlice.actions;
+export const {
+  reset,
+  setPlayer,
+  setRoomId,
+  setWinner,
+  setGame,
+  setPlayers,
+  clearPlayerTeams,
+  addPlayer,
+  addPlayerToTeam,
+  addClue,
+  removePlayer,
+  setScore,
+  setTurn,
+  revealCard,
+  setCards
+} = gameSlice.actions;
 
 export const selectRoomId = (state: RootState) => state.room.roomId;
 export const selectGame = (state: RootState) => state.room.game;
+export const selectPlayers = (state: RootState) => state.room.players;
 export const selectScore = (state: RootState) => state.room.game ? state.room.game.score : null;
 export const selectWinner = (state: RootState) => state.room.game ? state.room.game.winner : null;
 export const selectPlayerTeam = (state: RootState) => getPlayerTeam(state.room);

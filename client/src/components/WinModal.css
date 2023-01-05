@@ -3,11 +3,6 @@
     --bs-modal-width: 360px;
 }
 
-.win-modal .modal-content {
-    background-color: white;
-    color: black;
-}
-
 .win-modal .modal-body .text-red, .win-modal .modal-body .text-blue {
     font-weight: bold;
     text-transform: uppercase;

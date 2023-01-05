@@ -49,9 +49,6 @@ export interface Score {
 
 export interface GameState {
     // Players in game
-    players: {
-        [id: PlayerId]: PlayerData,
-    },
     teams: {
         [CardTeam.RED]: {
             [Role.SPYMASTER]: PlayerId | null,
@@ -70,4 +67,8 @@ export interface GameState {
     targetScore: Score,
     pastClues: Clue[],
     winner: null | Team,
+}
+
+export interface Players {
+    [id: PlayerId]: PlayerData,
 }

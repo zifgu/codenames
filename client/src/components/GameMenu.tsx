@@ -9,13 +9,16 @@ import {faCopy, faGear, faRightFromBracket} from "@fortawesome/free-solid-svg-ic
 import "./GameMenu.css";
 import {selectRoomId} from "../slices/gameSlice";
 
-export function GameMenu({onLeaveGame}: {onLeaveGame: () => void}) {
+export function GameMenu({onLeaveGame, onClickNewGame}: {onLeaveGame: () => void, onClickNewGame: () => void}) {
   const handleLeaveButtonClick = () => onLeaveGame();
 
   return (
     <div className="game-menu px-3">
       <RoomInvite />
-      <Button className="ms-auto" onClick={handleLeaveButtonClick}>
+      <Button className="ms-auto" onClick={onClickNewGame}>
+        New game
+      </Button>
+      <Button onClick={handleLeaveButtonClick}>
         <FontAwesomeIcon icon={faRightFromBracket} fixedWidth/>
       </Button>
       <Button>

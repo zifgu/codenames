@@ -6,7 +6,7 @@ import "./WinModal.css";
 import {CardTeam} from "../types/types";
 import {selectScore, selectWinner} from "../slices/gameSlice";
 
-export function GameWonModal() {
+export function GameWonModal({onClickNewGame}: {onClickNewGame: () => void}) {
   const [show, setShow] = useState(false);
   const winner = useAppSelector(selectWinner);
   const score = useAppSelector(selectScore);
@@ -42,7 +42,12 @@ export function GameWonModal() {
         <Button onClick={handleClose}>
           Close
         </Button>
-        <Button>New game</Button>
+        <Button onClick={() => {
+          setShow(false);
+          onClickNewGame();
+        }}>
+          New game
+        </Button>
       </Modal.Footer>
     </Modal>
   );

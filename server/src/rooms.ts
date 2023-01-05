@@ -17,7 +17,6 @@ const rooms: { [id: RoomId]: Room } = {};
 
 const newGame = (startingTeam: Team): GameState => {
   return {
-    players: {},
     teams: {
       [CardTeam.RED]: {
         [Role.SPYMASTER]: null,
@@ -51,6 +50,7 @@ const newGame = (startingTeam: Team): GameState => {
 /*
   Getters - assume the objects exist
 */
+export const getPlayers = (roomId: RoomId) => rooms[roomId].players;
 export const getGame = (roomId: RoomId) => rooms[roomId].game;
 export const getCards = (roomId: RoomId) => rooms[roomId].game.cards;
 export const getTurn = (roomId: RoomId) => rooms[roomId].game.turn;
@@ -58,7 +58,7 @@ export const getScore = (roomId: RoomId) => rooms[roomId].game.score;
 export const getWinner = (roomId: RoomId) => rooms[roomId].game.winner;
 
 const roomAndPlayerExist = (roomId: RoomId, playerId: PlayerId): boolean => {
-  return roomId in rooms && playerId in rooms[roomId].game.players;
+  return roomId in rooms && playerId in rooms[roomId].players;
 }
 
 /*
@@ -67,10 +67,29 @@ const roomAndPlayerExist = (roomId: RoomId, playerId: PlayerId): boolean => {
 export const createRoom = (startingTeam: Team): RoomId => {
   const roomId = nanoid();
   const game = newGame(startingTeam);
-  rooms[roomId] = {id: roomId, game};
+  rooms[roomId] = {id: roomId, game, players: {}};
 
   console.log(`Created room ${roomId}`);
   return roomId;
+}
+
+export const resetRoom = (roomId: RoomId, startingTeam: Team): boolean => {
+  if (!(roomId in rooms)) {
+    return false;
+  }
+
+  // Clear player roles, since they exist outside the game object
+  const room = rooms[roomId];
+  for (let player of Object.values(room.players)) {
+    player.team = null;
+    player.role = null;
+  }
+
+  rooms[roomId].game = newGame(startingTeam);
+
+  console.log(`The game in room ${roomId} was reset`);
+  console.log(room);
+  return true;
 }
 
 export const addPlayer = (roomId: RoomId, playerId: PlayerId): PlayerData | { error: "noSuchRoom" | "nicknameInUse" } => {
@@ -78,24 +97,25 @@ export const addPlayer = (roomId: RoomId, playerId: PlayerId): PlayerData | { er
     return {error: "noSuchRoom"};
   }
 
-  const game = rooms[roomId].game;
+  const room = rooms[roomId];
 
-  if (playerId in game.players) {
+  if (playerId in room.players) {
     console.log(`Error: nickname ${playerId} in use`);
     return {error: "nicknameInUse"};
   } else {
     const playerData: PlayerData = {id: playerId, team: null, role: null};
-    game.players[playerId] = playerData;
+    room.players[playerId] = playerData;
 
     console.log(`Player ${playerId} joined room ${roomId}`);
-    console.log(game);
+    console.log(room);
     return playerData;
   }
 }
 
 export const removePlayer = (roomId: RoomId, playerId: PlayerId): boolean => {
   if (roomId in rooms) {
-    const game = rooms[roomId].game;
+    const room = rooms[roomId];
+    const game = room.game;
 
     if (game.teams[CardTeam.RED][Role.SPYMASTER] === playerId) {
       game.teams[CardTeam.RED][Role.SPYMASTER] = null;
@@ -106,10 +126,10 @@ export const removePlayer = (roomId: RoomId, playerId: PlayerId): boolean => {
       game.teams[CardTeam.BLUE][Role.OPERATIVE] = game.teams[CardTeam.BLUE][Role.OPERATIVE].filter((id) => id !== playerId);
     }
 
-    delete game.players[playerId];
+    delete room.players[playerId];
 
     console.log(`Player ${playerId} left room ${roomId}`);
-    console.log(game);
+    console.log(room);
     return true;
   }
   return false;
@@ -118,15 +138,16 @@ export const removePlayer = (roomId: RoomId, playerId: PlayerId): boolean => {
 export const addPlayerToTeam = (roomId: RoomId, playerId: PlayerId, team: Team, role: Role): boolean => {
   if (!roomAndPlayerExist(roomId, playerId)) return false;
 
-  const game = rooms[roomId].game;
+  const room = rooms[roomId];
+  const game = room.game;
 
-  if (game.players[playerId].team || game.players[playerId].role) {
+  if (room.players[playerId].team || room.players[playerId].role) {
     // Already has team/role
     return false;
   }
 
-  game.players[playerId].team = team;
-  game.players[playerId].role = role;
+  room.players[playerId].team = team;
+  room.players[playerId].role = role;
   if (role === Role.SPYMASTER) {
     game.teams[team][role] = playerId;
   } else {
@@ -134,16 +155,17 @@ export const addPlayerToTeam = (roomId: RoomId, playerId: PlayerId, team: Team, 
   }
 
   console.log(`Player ${playerId} joined team ${team} as a ${role}`);
-  console.log(game);
+  console.log(room);
   return true;
 }
 
 export const submitClue = (roomId: RoomId, playerId: PlayerId, clue: Clue): boolean => {
   if (!roomAndPlayerExist(roomId, playerId)) return false;
 
-  const game = rooms[roomId].game;
-  const playerTeam = game.players[playerId].team;
-  const playerRole = game.players[playerId].role;
+  const room = rooms[roomId];
+  const game = room.game;
+  const playerTeam = room.players[playerId].team;
+  const playerRole = room.players[playerId].role;
 
   if (playerTeam == game.turn.team && playerRole === game.turn.role && playerRole === Role.SPYMASTER) {
     game.pastClues.push(clue);
@@ -153,7 +175,7 @@ export const submitClue = (roomId: RoomId, playerId: PlayerId, clue: Clue): bool
     game.turn.role = Role.OPERATIVE;
 
     console.log(`Player ${playerId} gave clue ${clue.word} (${clue.number})`);
-    console.log(game);
+    console.log(room);
     return true;
   }
   return false;
@@ -163,9 +185,10 @@ export const submitGuess = (roomId: RoomId, playerId: PlayerId, cardIndex: numbe
   if (cardIndex < 0 || cardIndex >= 25) return null;
   if (!roomAndPlayerExist(roomId, playerId)) return null;
 
-  const game = rooms[roomId].game;
-  const playerTeam = game.players[playerId].team;
-  const playerRole = game.players[playerId].role;
+  const room = rooms[roomId];
+  const game = room.game;
+  const playerTeam = room.players[playerId].team;
+  const playerRole = room.players[playerId].role;
   const card = game.cards[cardIndex];
 
   if (playerTeam == game.turn.team && playerRole === game.turn.role && playerRole === Role.OPERATIVE && game.turn.guessesLeft > 0 && !card.revealed) {
@@ -193,7 +216,7 @@ export const submitGuess = (roomId: RoomId, playerId: PlayerId, cardIndex: numbe
     }
 
     console.log(`Player ${playerId} guessed card ${cardIndex} '${card.codename}' which was ${card.team}`);
-    console.log(game);
+    console.log(room);
     return card.team;
   }
   return null;
@@ -202,16 +225,17 @@ export const submitGuess = (roomId: RoomId, playerId: PlayerId, cardIndex: numbe
 export const endTurn = (roomId: RoomId, playerId: PlayerId): boolean => {
   if (!roomAndPlayerExist(roomId, playerId)) return false;
 
-  const game = rooms[roomId].game;
-  const playerTeam = game.players[playerId].team;
-  const playerRole = game.players[playerId].role;
+  const room = rooms[roomId];
+  const game = room.game;
+  const playerTeam = room.players[playerId].team;
+  const playerRole = room.players[playerId].role;
 
   if (playerTeam == game.turn.team && playerRole === game.turn.role && playerRole === Role.OPERATIVE && game.turn.guessesLeft < game.turn.maxGuesses) {
     game.turn.team = oppositeTeam[game.turn.team];
     game.turn.role = Role.SPYMASTER;
 
     console.log(`Player ${playerId} ended their turn`);
-    console.log(game);
+    console.log(room);
     return true;
   }
   return false;

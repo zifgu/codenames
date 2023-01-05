@@ -1,4 +1,17 @@
-import {CardData, CardTeam, Clue, GameState, PlayerData, PlayerId, Role, RoomId, Score, Team, Turn} from "./types";
+import {
+  CardData,
+  CardTeam,
+  Clue,
+  GameState,
+  PlayerData,
+  PlayerId,
+  Players,
+  Role,
+  RoomId,
+  Score,
+  Team,
+  Turn
+} from "./types";
 
 export interface ServerToClientEvents {
   playerJoin: (player: PlayerData) => void;
@@ -10,17 +23,24 @@ export interface ServerToClientEvents {
   newTurn: (newTurn: Turn) => void;
 
   win: (winningTeam: Team, cards: CardData[]) => void;
+  newGame: (gameState: GameState) => void;
 }
 
 export interface ClientToServerEvents {
   createGame: (playerId: PlayerId, startingTeam: Team, callback: (roomId: RoomId, gameState: GameState) => void) => void;
-  joinGame: (playerId: PlayerId, roomId: RoomId, callback: (roomId: RoomId | null, gameState: GameState | null) => void) => void;
+  joinGame: (
+    playerId: PlayerId,
+    roomId: RoomId,
+    callback: (roomId: RoomId | null, players: Players | null, gameState: GameState | null) => void
+  ) => void;
   joinTeam: (team: Team, role: Role, callback: (cards?: CardData[]) => void) => void;
   leaveGame: () => void;
 
   submitClue: (clue: Clue) => void;
   submitGuess: (cardIndex: number) => void;
   endTurn: () => void;
+
+  resetGame: (startingTeam: Team) => void;
 }
 
 export interface InterServerEvents {}

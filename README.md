@@ -1,7 +1,6 @@
 # Codenames
 
 ## Wishlist
-- Starting a new game in the same room
 - Ability to change nickname
 - Official spectator role
 - Game settings

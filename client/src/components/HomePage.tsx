@@ -67,7 +67,7 @@ function CreateGameModal({show, onCreateGame, onClose}: {show: boolean, onCreate
   const [startingTeam, setStartingTeam] = useState<Team>(CardTeam.RED);
 
   return (
-    <Modal show={show} centered className="creation-modal">
+    <Modal show={show} centered>
       <Modal.Header className="bg-red">
         Create a game
       </Modal.Header>
@@ -151,7 +151,7 @@ function JoinGameModal({show, onJoinGame, onClose} : {show: boolean, onJoinGame:
   }
 
   return (
-    <Modal show={show} centered className="creation-modal">
+    <Modal show={show} centered>
       <Modal.Header className="bg-blue">
         Join a game
       </Modal.Header>

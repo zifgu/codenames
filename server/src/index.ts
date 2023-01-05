@@ -9,8 +9,8 @@ import {
   createRoom,
   endTurn,
   getCards,
-  getGame, getScore, getTurn, getWinner,
-  removePlayer,
+  getGame, getPlayers, getScore, getTurn, getWinner,
+  removePlayer, resetRoom,
   submitClue,
   submitGuess
 } from "./rooms";
@@ -66,12 +66,21 @@ io.on("connection", (socket) => {
       socket.data.roomId = roomId;
       socket.data.playerId = playerId;
 
-      callback(roomId, filterGame(getGame(roomId)));
+      callback(roomId, getPlayers(roomId), filterGame(getGame(roomId)));
       socket.to(roomId).emit("playerJoin", result);
     } else if (result.error === "noSuchRoom") {
-      callback(null, null);
+      callback(null, null, null);
     } else {
-      callback(roomId, null);
+      callback(roomId, null, null);
+    }
+  });
+
+  socket.on("resetGame", (startingTeam) => {
+    const roomId = socket.data.roomId;
+    if (!roomId) return;
+
+    if (resetRoom(roomId, startingTeam)) {
+      io.in(roomId).emit("newGame", filterGame(getGame(roomId)));
     }
   });
 
