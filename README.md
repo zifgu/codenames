@@ -11,7 +11,7 @@ Refactoring:
 - Tests
 
 Cosmetic:
-- Animation
+- More animation
 - Rules/hints
 - Colorblind hints on cards
 
