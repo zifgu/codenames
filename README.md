@@ -9,11 +9,9 @@
 - Per-game chat
 
 Refactoring:
-- Add React Router
 - Tests
 
 Cosmetic:
-- *Client-side input validation*
 - Animation
 - Rules/hints
 - Colorblind hints on cards

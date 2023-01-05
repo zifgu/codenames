@@ -25,10 +25,10 @@ export function GameWonModal() {
       backdrop="static"
       keyboard={false}
     >
-      <div className={`win-modal__header ${winner} p-2`}>
+      <Modal.Header className={`bg-${winner}`}>
         Game over!
-      </div>
-      <div className="win-modal__body p-4">
+      </Modal.Header>
+      <Modal.Body>
         <div className="mb-3"><span className={`text-${winner}`}>{winner}</span> has won!</div>
         {
           score &&
@@ -37,13 +37,13 @@ export function GameWonModal() {
             <div><span className="text-blue">{CardTeam.BLUE}</span> - {score[CardTeam.BLUE]} agents found</div>
           </>
         }
-      </div>
-      <div className="win-modal__footer pb-4">
+      </Modal.Body>
+      <Modal.Footer>
         <Button onClick={handleClose}>
           Close
         </Button>
         <Button>New game</Button>
-      </div>
+      </Modal.Footer>
     </Modal>
   );
 }

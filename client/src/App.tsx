@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import {CardTeam, Clue, Role, RoomId, Team,} from "./types/types";
+import {CardTeam, Clue, PlayerId, Role, RoomId, Team,} from "./types/types";
 import {
   reset,
   addClue,
@@ -35,10 +35,6 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(`http://lo
 export function App() {
   const dispatch = useAppDispatch();
   const gameState = useAppSelector(selectGame);
-  const [room, setRoom] = useState<RoomId>("");
-  const [nickname, setNickname] = useState<string>("");
-  const [roomError, setRoomError] = useState(false);
-  const [nicknameError, setNicknameError] = useState(false);
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -97,7 +93,7 @@ export function App() {
     };
   }, [dispatch]);
 
-  const handleCreateGame = () => {
+  const handleCreateGame = (nickname: PlayerId) => {
     socket.emit("createGame", nickname, (roomId, gameState) => {
       dispatch(addPlayer({id: nickname, team: null, role: null}));
       dispatch(setRoomId(roomId));
@@ -106,22 +102,23 @@ export function App() {
     });
   };
 
-  const handleJoinGame = () => {
-    setRoomError(false);
-    setNicknameError(false);
-    socket.emit("joinGame", nickname, room, (roomId, gameState) => {
-      if (roomId === null) {
-        // Invalid room ID
-        setRoomError(true);
-      } else if (gameState === null) {
-        // Invalid nickname
-        setNicknameError(true);
-      } else {
-        dispatch(addPlayer({id: nickname, team: null, role: null}));
-        dispatch(setRoomId(roomId));
-        dispatch(setPlayer(nickname));
-        dispatch(setGame(gameState));
-      }
+  const handleJoinGame = (room: RoomId, nickname: PlayerId) => {
+    return new Promise<{roomError: boolean, nicknameError: boolean}>((resolve) => {
+      socket.emit("joinGame", nickname, room, (roomId, gameState) => {
+        if (roomId === null) {
+          // Invalid room ID
+          resolve({roomError: true, nicknameError: false});
+        } else if (gameState === null) {
+          // Invalid nickname
+          resolve({roomError: false, nicknameError: true});
+        } else {
+          dispatch(addPlayer({id: nickname, team: null, role: null}));
+          dispatch(setRoomId(roomId));
+          dispatch(setPlayer(nickname));
+          dispatch(setGame(gameState));
+          resolve({roomError: false, nicknameError: false});
+        }
+      });
     });
   };
 
@@ -131,12 +128,6 @@ export function App() {
         gameState ?
           <Game/> :
           <HomePage
-            nickname={nickname}
-            roomId={room}
-            nicknameError={nicknameError}
-            roomError={roomError}
-            onChangeNickname={(newNickname) => setNickname(newNickname)}
-            onChangeRoomId={(newRoomId) => setRoom(newRoomId)}
             onCreateGame={handleCreateGame}
             onJoinGame={handleJoinGame}
           />

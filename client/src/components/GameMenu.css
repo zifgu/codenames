@@ -1,7 +1,7 @@
 .game-menu, .game-invite {
     display: flex;
     flex-direction: row;
-    justify-content: start;
+    justify-content: flex-start;
 }
 
 .game-menu {
