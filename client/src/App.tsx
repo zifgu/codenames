@@ -93,8 +93,8 @@ export function App() {
     };
   }, [dispatch]);
 
-  const handleCreateGame = (nickname: PlayerId) => {
-    socket.emit("createGame", nickname, (roomId, gameState) => {
+  const handleCreateGame = (nickname: PlayerId, startingTeam: Team) => {
+    socket.emit("createGame", nickname, startingTeam, (roomId, gameState) => {
       dispatch(addPlayer({id: nickname, team: null, role: null}));
       dispatch(setRoomId(roomId));
       dispatch(setPlayer(nickname));

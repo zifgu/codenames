@@ -1,12 +1,12 @@
 import React, {useEffect, useRef, useState} from "react";
-import {RoomId} from "../types/types";
+import {CardTeam, RoomId, Team} from "../types/types";
 import {Button} from "./Button";
 import "./HomePage.css";
 import Form from "react-bootstrap/Form";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Modal from "react-bootstrap/Modal";
 
-type CreateGameHandler = (playerId: string) => void;
+type CreateGameHandler = (playerId: string, startingTeam: Team) => void;
 type JoinGameHandler = (roomId: RoomId, nickname: string) => Promise<{ roomError: boolean, nicknameError: boolean }>;
 
 export function HomePage({onCreateGame, onJoinGame}: {onCreateGame: CreateGameHandler, onJoinGame: JoinGameHandler}) {
@@ -64,6 +64,7 @@ export function HomePage({onCreateGame, onJoinGame}: {onCreateGame: CreateGameHa
 
 function CreateGameModal({show, onCreateGame, onClose}: {show: boolean, onCreateGame: CreateGameHandler, onClose: () => void}) {
   const [nickname, setNickname] = useState<string>("");
+  const [startingTeam, setStartingTeam] = useState<Team>(CardTeam.RED);
 
   return (
     <Modal show={show} centered className="creation-modal">
@@ -76,8 +77,20 @@ function CreateGameModal({show, onCreateGame, onClose}: {show: boolean, onCreate
             Choose which team goes first:
           </Form.Label>
           <ButtonGroup className="d-flex gap-2">
-            <Button>Red</Button>
-            <Button>Blue</Button>
+            <Button
+              pushed={startingTeam === CardTeam.RED}
+              variant={startingTeam === CardTeam.RED ? "red" : undefined}
+              onClick={() => setStartingTeam(CardTeam.RED)}
+            >
+              Red
+            </Button>
+            <Button
+              pushed={startingTeam === CardTeam.BLUE}
+              variant={startingTeam === CardTeam.BLUE ? "blue" : undefined}
+              onClick={() => setStartingTeam(CardTeam.BLUE)}
+            >
+              Blue
+            </Button>
           </ButtonGroup>
         </Form.Group>
         <Form.Group className="mt-4">
@@ -97,7 +110,7 @@ function CreateGameModal({show, onCreateGame, onClose}: {show: boolean, onCreate
           Cancel
         </Button>
         <Button
-          onClick={() => onCreateGame(nickname)}
+          onClick={() => onCreateGame(nickname, startingTeam)}
           disabled={!nickname}
         >
           Create

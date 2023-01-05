@@ -47,8 +47,8 @@ const filterGame = (gameState: GameState) => {
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  socket.on("createGame", (playerId, callback) => {
-    const roomId = createRoom();
+  socket.on("createGame", (playerId, startingTeam, callback) => {
+    const roomId = createRoom(startingTeam);
     addPlayer(roomId, playerId);
 
     socket.join(roomId);

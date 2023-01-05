@@ -71,13 +71,3 @@ export interface GameState {
     pastClues: Clue[],
     winner: null | Team,
 }
-
-// Utility functions
-export function getOppositeTeam(team: Team) {
-    switch (team) {
-        case CardTeam.RED:
-            return CardTeam.BLUE;
-        case CardTeam.BLUE:
-            return CardTeam.RED;
-    }
-}

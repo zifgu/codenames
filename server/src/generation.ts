@@ -1,10 +1,10 @@
 import {codeNameWords} from "./words";
-import {CardData, CardTeam} from "./types/types";
+import {CardData, CardTeam, oppositeTeam, Team} from "./types/types";
 
-export function getRandomCards(): CardData[] {
+export function getRandomCards(startingTeam: Team): CardData[] {
   const cards: CardData[] = [];
   const codeNames: string[] = randomCodeNames();
-  const cardTeams: CardTeam[] = randomCardTeams();
+  const cardTeams: CardTeam[] = randomCardTeams(startingTeam);
 
   for (let i = 0; i < 25; i++) {
     cards.push({
@@ -28,7 +28,7 @@ function randomCodeNames(): string[] {
   return selectRandom(allCodeNames, 25);
 }
 
-function randomCardTeams(): CardTeam[] {
+function randomCardTeams(startingTeam: Team): CardTeam[] {
   const cardTypes: CardTeam[] = Array<CardTeam>(25);
 
   const indices = Array.from(Array(25).keys());
@@ -36,9 +36,9 @@ function randomCardTeams(): CardTeam[] {
 
   for (let i = 0; i < 25; i++) {
     if (i < 9) {
-      cardTypes[indices[i]] = CardTeam.RED;
+      cardTypes[indices[i]] = startingTeam;
     } else if (i < 17) {
-      cardTypes[indices[i]] = CardTeam.BLUE;
+      cardTypes[indices[i]] = oppositeTeam[startingTeam];
     } else if (i < 24) {
       cardTypes[indices[i]] = CardTeam.BYSTANDER;
     } else {

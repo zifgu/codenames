@@ -41,7 +41,7 @@ body {
     border: 2px solid var(--gray-1);
 
     background-color: var(--dark-1);
-    color: white;
+    color: var(--light-1);
 }
 .form-control:focus {
     border-color: var(--light-2);
