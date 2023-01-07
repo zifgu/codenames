@@ -18,10 +18,10 @@ export function GameMenu({onLeaveGame, onClickNewGame}: {onLeaveGame: () => void
       <Button className="ms-auto" onClick={onClickNewGame}>
         New game
       </Button>
-      <Button onClick={handleLeaveButtonClick}>
+      <Button onClick={handleLeaveButtonClick} aria-label="Leave game">
         <FontAwesomeIcon icon={faRightFromBracket} fixedWidth/>
       </Button>
-      <Button>
+      <Button aria-label="Settings">
         <FontAwesomeIcon icon={faGear} fixedWidth/>
       </Button>
     </div>
@@ -40,7 +40,7 @@ function RoomInvite() {
 
   return (
     <div className="game-invite">
-      <FormControl readOnly value={roomId}/>
+      <FormControl readOnly value={roomId} aria-label="Room code"/>
       <OverlayTrigger
         placement="bottom"
         show={showTooltip}
@@ -51,7 +51,7 @@ function RoomInvite() {
         }
       >
         <Button onClick={handleCopyButtonClick}>
-          <FontAwesomeIcon icon={faCopy} fixedWidth/>
+          <FontAwesomeIcon icon={faCopy} fixedWidth aria-label="Copy room code"/>
         </Button>
       </OverlayTrigger>
     </div>
